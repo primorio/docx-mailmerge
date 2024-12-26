@@ -11,8 +11,8 @@ class FootnoteHeaderFooterTest(EtreeMixin, unittest.TestCase):
     # @TODO test missing values
     # @TODO test if separator isn't section
     # @TODO test headers/footers with relations
-    @unittest.expectedFailure
-    def test_all(self):
+    # @unittest.expectedFailure
+    def test_all_header_footer(self):
         values = ["one", "two", "three"]
         # header/footer/footnotes don't work with multiple replacements, only with merge
         # fix this when it is implemented
@@ -76,6 +76,29 @@ class FootnoteHeaderFooterTest(EtreeMixin, unittest.TestCase):
                 ]
                 + ["Header even: ", "Header on every page: ", "Header on first page: "]
             ),
+        )
+
+    @unittest.expectedFailure
+    def test_all_footnote(self):
+        values = ["one", "two", "three"]
+        # header/footer/footnotes don't work with multiple replacements, only with merge
+        # fix this when it is implemented
+        document, root_elem = self.merge_templates(
+            "test_footnote_header_footer.docx",
+            [
+                {
+                    "fieldname": value,
+                    "footerfield": "f_" + value,
+                    "headerfield": "h_" + value,
+                    "footerfirst": "ff_" + value,
+                    "headerfirst": "hf_" + value,
+                    "footereven": "fe_" + value,
+                    "headereven": "he_" + value,
+                }
+                for value in values
+            ],
+            separator="nextPage_section",
+            # output="tests/output/test_output_footnote_header_footer.docx"
         )
 
         footnote_root_elem = get_document_body_part(document, "footnotes").getroot()

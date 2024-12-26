@@ -125,8 +125,8 @@ def get_document_body_parts(document, endswith="document"):
     for part in document.parts.values():
         if part["part"].getroot().tag.endswith("}%s" % endswith):
             parts.append(part["part"])
-    for _, _, part in document.new_parts:
-        if part.getroot().tag.endswith("}%s" % endswith):
-            parts.append(part)
+    for new_part in document.new_parts:
+        if new_part.content.getroot().tag.endswith("}%s" % endswith):
+            parts.append(new_part.content)
 
     return parts
