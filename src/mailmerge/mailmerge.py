@@ -34,7 +34,7 @@ class MailMergeDocx:
 
     def fill_parts(self):
         content_types_zi = self.zip.getinfo("[Content_Types].xml")
-        content_types = etree.parse(self.zip.open(content_types_zi))
+        content_types = etree.parse(self.zip.open(content_types_zi), parser=None)
         self.category_part_map["content_types"] = [content_types_zi]
         self.parts[content_types_zi] = dict(part=content_types)
         for file in content_types.findall("{%(ct)s}Override" % NAMESPACES):
@@ -47,7 +47,7 @@ class MailMergeDocx:
     def __get_tree_of_file(self, file):
         fn = file.attrib["PartName" % NAMESPACES].split("/", 1)[1]
         zi = self.zip.getinfo(fn)
-        return zi, dict(zi=zi, file=file, part=etree.parse(self.zip.open(zi)))
+        return zi, dict(zi=zi, file=file, part=etree.parse(self.zip.open(zi), parser=None))
 
     def get_parts(self, category_part_map=None):
         """return all the parts based on category_part_map"""
@@ -63,7 +63,7 @@ class MailMergeDocx:
         rel_fn = "word/_rels/%s.rels" % os.path.basename(part_zi.filename)
         if rel_fn in self.zip.namelist():
             zi = self.zip.getinfo(rel_fn)
-            rel_root = etree.parse(self.zip.open(zi))
+            rel_root = etree.parse(self.zip.open(zi), parser=None)
             self.parts[zi] = dict(zi=zi, part=rel_root)
             return rel_root
         # else:
