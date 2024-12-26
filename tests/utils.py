@@ -4,8 +4,8 @@ import zipfile
 from os import path
 
 from lxml import etree
-
-from mailmerge import CONTENT_TYPES_PARTS, NAMESPACES, MailMerge
+from mailmerge import NAMESPACES, MailMerge
+from mailmerge.mailmerge import CONTENT_TYPES_PARTS
 
 TEXTS_XPATH = "//w:t/text()"
 

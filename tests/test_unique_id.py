@@ -1,6 +1,6 @@
 import unittest
 
-from mailmerge import UniqueIdsManager
+from mailmerge.mailmerge import UniqueIdsManager
 
 
 class UniqueIdsManagerTest(unittest.TestCase):

@@ -10,8 +10,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from lxml import etree
 
-__version__ = "0.8.3"
-
 NAMESPACES = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
     "wp": "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",

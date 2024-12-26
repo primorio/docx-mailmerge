@@ -40,5 +40,9 @@ exclude = []
 line-length = 120
 target-version = "py311"
 
+[tool.ruff.lint.extend-per-file-ignores]
+# Also ignore `E402` in all `__init__.py` files.
+"__init__.py" = ["E402"]
+
 [tool.setuptools.dynamic]
 version = {attr = "mailmerge.__version__"}

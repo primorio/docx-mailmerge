@@ -6,6 +6,7 @@ import warnings
 from os import path
 
 from mailmerge import NAMESPACES, MailMerge
+
 from tests.utils import EtreeMixin, get_document_body_part
 
 
