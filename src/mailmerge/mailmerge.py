@@ -263,8 +263,8 @@ class MailMerge(object):
 
         # add the new files in the content types
         content_types = self.get_content_types().getroot()
-        for _filename, part_content_type, _part in self.new_parts:
-            content_types.append(part_content_type)
+        for new_part in self.new_parts:
+            content_types.append(new_part.part_content_type)
 
         with ZipFile(file, "w", ZIP_DEFLATED) as output:
             for zi in self.zip.filelist:
@@ -278,9 +278,10 @@ class MailMerge(object):
                 else:
                     output.writestr(zi.filename, self.zip.read(zi))
 
-            for filename, _part_content_type, part in self.new_parts:
-                xml = etree.tostring(part.getroot(), encoding="UTF-8", xml_declaration=True)
-                output.writestr(filename, xml)
+            for new_part in self.new_parts:
+                xml = etree.tostring(new_part.content.getroot(), encoding="UTF-8", xml_declaration=True)
+                output.writestr(new_part.path, xml)
+                # TODO add relations
 
     def get_merge_fields(self):
         """ " get the fields from the document"""
@@ -383,8 +384,8 @@ class MailMerge(object):
         for part_info in self.get_parts():
             self.merge_data.replace(part_info["part"], replacements)
 
-        for _filename, _part_content_type, part in self.new_parts:
-            self.merge_data.replace(part, replacements)
+        for new_part in self.new_parts:
+            self.merge_data.replace(new_part.content, replacements)
 
     def merge_rows(self, anchor, rows):
         """anchor is one of the fields in the table"""

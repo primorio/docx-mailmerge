@@ -10,6 +10,16 @@ from .constants import MAKE_TESTS_HAPPY, NAMESPACES, VALID_SEPARATORS
 PARTFILENAME_RE = re.compile(r"([A-Za-z_]+)(\d+).xml")
 
 
+class NewPart:
+    """class handling new parts added to the Document"""
+
+    def __init__(self, path, part_content_type, content, relations):
+        self.path = path
+        self.part_content_type = part_content_type
+        self.content = content
+        self.relations = relations
+
+
 class MergeHeaderFooterDocument(object):
     """prepare and merge one Header/Footer document for merge_templates
 
@@ -25,7 +35,7 @@ class MergeHeaderFooterDocument(object):
         self.relations = relations
         self.sep_type = None
         self.target, self.id_type, self.part_id = self._parse_part_filename(self.zi.filename)
-        self.new_parts = []  # list of (filename, root) parts
+        self.new_parts = []  # list of NewParts
         self._current_part = None
         self.has_fields = bool(self.part.findall(".//MergeField"))
         self._prepare_data(separator)
@@ -66,7 +76,7 @@ class MergeHeaderFooterDocument(object):
             new_part_content_type.attrib["PartName"] = self.part_content_type.attrib["PartName"].replace(
                 self.target, new_target
             )
-            self.new_parts.append((new_filename, new_part_content_type, self._current_part))
+            self.new_parts.append(NewPart(new_filename, new_part_content_type, self._current_part, self.relations))
             self._current_part = None
             return [(self.target, new_target)]
 
