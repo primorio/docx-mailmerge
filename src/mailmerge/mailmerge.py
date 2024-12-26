@@ -50,7 +50,6 @@ class MailMerge(object):
         self.new_parts = []  # list of [(filename, part)]
         self.categories = {}  # category: [zi, ...]
         self.merge_data = MergeData(remove_empty_tables=remove_empty_tables, keep_fields=keep_fields)
-        self.remove_empty_tables = remove_empty_tables
         self.auto_update_fields_on_open = auto_update_fields_on_open
         self.keep_fields = keep_fields
         self._has_unmerged_fields = False
@@ -65,6 +64,14 @@ class MailMerge(object):
         except Exception:
             self.zip.close()
             raise
+
+    @property
+    def remove_empty_tables(self):
+        return self.merge_data.remove_empty_tables
+
+    @remove_empty_tables.setter
+    def remove_empty_tables(self, value):
+        self.merge_data.remove_empty_tables = value
 
     def get_parts(self, categories=None):
         """return all the parts based on categories"""
@@ -95,11 +102,6 @@ class MailMerge(object):
             return relations
         # else:
         #     print(rel_fn, self.zip.namelist())
-
-    def __setattr__(self, __name, __value):
-        super(MailMerge, self).__setattr__(__name, __value)
-        if __name == "remove_empty_tables":
-            self.merge_data.remove_empty_tables = __value
 
     def __fill_parts(self):
         content_types_zi = self.zip.getinfo("[Content_Types].xml")
