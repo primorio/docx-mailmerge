@@ -1,6 +1,9 @@
+.env
 /.tox/
 *.pyc
 *.egg-info
 dist
 *.code-workspace
 .DS_Store
+/tests/old
+/tests/output
