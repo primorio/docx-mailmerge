@@ -751,7 +751,7 @@ class MergeDocument(object):
         # self._last_section = None  # saving the last section to add it at the end
         # self._body = None  # the document body, where all the documents are appended
         # self._body_copy = None  # a deep copy of the original body without ending section
-        # self._current_body = None  # the current document body where all the changes are merged
+        self._current_body = None  # the current document body where all the changes are merged
         # self._current_separator = None
         self._finish_rels = []
         self._prepare_data(separator)
