@@ -137,11 +137,11 @@ class MergeField(object):
         self._instr_elements = [] if instr_elements is None else instr_elements
         self._show_elements = [] if show_elements is None else show_elements
         self.instr = instr
+        instr_tokens = [] if instr_tokens is None else instr_tokens
         self.instr_tokens = instr_tokens
         self.filled_elements = []
         self.filled_value = None
         self.name = name
-        instr_tokens = [] if instr_tokens is None else instr_tokens
         if not name and instr_tokens[1:]:
             self.name = instr_tokens[1]
 
@@ -262,8 +262,8 @@ class MergeField(object):
         # more checking needed before activating
         # locale.setlocale(locale.LC_TIME, "")
         fmt = re.sub(DATEFORMAT_RE, lambda x: DATEFORMAT_MAP[x[0]], option)
-        fmt_args = {"d": value}
-        if hasattr(value, "hour"):
+        fmt_args = {"d": value, "hour12": 0}
+        if isinstance(value, (datetime.datetime, datetime.time)):
             fmt_args["hour12"] = value.hour % 12
         fmt = fmt.format(**fmt_args)
         value = value.strftime(fmt)
@@ -333,14 +333,14 @@ class MergeField(object):
         return all_elements
 
     def _make_br(self):
-        return etree.Element("{%(w)s}br" % NAMESPACES)
+        return etree.Element("{%(w)s}br" % NAMESPACES, attrib=None, nsmap=None)
 
     def _make_text(self, text):
         if self.nested:
-            text_node = etree.Element("{%(w)s}instrText" % NAMESPACES)
+            text_node = etree.Element("{%(w)s}instrText" % NAMESPACES, attrib=None, nsmap=None)
             text_node.set("{%(xml)s}space" % NAMESPACES, "preserve")
         else:
-            text_node = etree.Element("{%(w)s}t" % NAMESPACES)
+            text_node = etree.Element("{%(w)s}t" % NAMESPACES, attrib=None, nsmap=None)
 
         text_node.text = text
         return text_node
@@ -351,7 +351,9 @@ class MergeField(object):
         for subelem in self._all_elements[1:]:
             self.parent.remove(subelem)
 
-        replacement_element = etree.Element("MergeField", merge_key=self.key, name=self.name)
+        replacement_element = etree.Element(
+            "MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name
+        )
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element
 
@@ -773,7 +775,9 @@ class MergeDocument(object):
                     type_element = None
 
             if type_element is None:
-                type_element = etree.SubElement(first_section, "{%(w)s}type" % NAMESPACES)
+                type_element = etree.SubElement(
+                    first_section, "{%(w)s}type" % NAMESPACES, attrib=None, nsmap=None
+                )
 
             type_element.set("{%(w)s}val" % NAMESPACES, sep_type)
 
@@ -789,14 +793,16 @@ class MergeDocument(object):
         # EMPTY THE BODY - PREPARE TO FILL IT WITH DATA
         self._body.clear()
 
-        self._separator = etree.Element("{%(w)s}p" % NAMESPACES)
+        self._separator = etree.Element("{%(w)s}p" % NAMESPACES, attrib=None, nsmap=None)
 
         if sep_class == "section":
-            pPr = etree.SubElement(self._separator, "{%(w)s}pPr" % NAMESPACES)
+            pPr = etree.SubElement(
+                self._separator, "{%(w)s}pPr" % NAMESPACES, attrib=None, nsmap=None
+            )
             pPr.append(deepcopy(self._last_section))
         elif sep_class == "break":
-            r = etree.SubElement(self._separator, "{%(w)s}r" % NAMESPACES)
-            nbreak = etree.SubElement(r, "{%(w)s}br" % NAMESPACES)
+            r = etree.SubElement(self._separator, "{%(w)s}r" % NAMESPACES, attrib=None, nsmap=None)
+            nbreak = etree.SubElement(r, "{%(w)s}br" % NAMESPACES, attrib=None, nsmap=None)
             nbreak.set("{%(w)s}type" % NAMESPACES, sep_type)
 
     def prepare(self, merge_data, first=False):
@@ -1082,7 +1088,7 @@ class MailMerge(object):
                 update_fields_elem = settings_root.find("{%(w)s}updateFields" % NAMESPACES)
                 if not update_fields_elem:
                     update_fields_elem = etree.SubElement(
-                        settings_root, "{%(w)s}updateFields" % NAMESPACES
+                        settings_root, "{%(w)s}updateFields" % NAMESPACES, attrib=None, nsmap=None
                     )
                 update_fields_elem.set("{%(w)s}val" % NAMESPACES, "true")
 
