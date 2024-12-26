@@ -22,7 +22,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
                         {"fieldname": "2b v ~2b"},
                     ]
                 )
-                self.assertTrue(any(item.category == DeprecationWarning for item in warning_list))
+                self.assertTrue(any(item.category is DeprecationWarning for item in warning_list))
 
             with tempfile.TemporaryFile() as outfile:
                 document.write(outfile)
@@ -39,9 +39,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         however this template already contains two pages. So the result should
         be 3 * 2 pages.
         """
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_pages_paged.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_pages_paged.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             with warnings.catch_warnings(record=True) as warning_list:
@@ -52,7 +50,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
                         {"fieldname": "2b v ~2b"},
                     ]
                 )
-                self.assertTrue(any(item.category == DeprecationWarning for item in warning_list))
+                self.assertTrue(any(item.category is DeprecationWarning for item in warning_list))
 
             with tempfile.TemporaryFile() as outfile:
                 document.write(outfile)

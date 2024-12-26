@@ -10,9 +10,7 @@ from tests.utils import EtreeMixin, get_document_body_part
 
 class MergeListTest(EtreeMixin, unittest.TestCase):
     def test_break_page(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -34,9 +32,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_break_col(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -58,9 +54,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_break_tW(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -82,9 +76,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_sect_page(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -106,9 +98,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_sect_cont(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -130,9 +120,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_sect_eP(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -154,9 +142,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_sect_oP(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(
@@ -178,9 +164,7 @@ class MergeListTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())
 
     def test_sect_col(self):
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_merge_templates_simple.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_merge_templates_simple.docx")) as document:
             self.assertEqual(document.get_merge_fields(), {"fieldname"})
 
             document.merge_templates(

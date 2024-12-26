@@ -217,18 +217,12 @@ class MergeField(object):
         format_number = format_match.group(2)
         format_suffix = format_match.group(3) or ""
         if format_number[0] == "P":
-            return "{{}}{{:.{}%}}{{}}".format(int(format_number[1:])).format(
-                format_prefix, value, format_suffix
-            )
+            return "{{}}{{:.{}%}}{{}}".format(int(format_number[1:])).format(format_prefix, value, format_suffix)
         if format_number[0] == "N":
-            return "{{}}{{:.{}f}}{{}}".format(int(format_number[1:])).format(
-                format_prefix, value, format_suffix
-            )
+            return "{{}}{{:.{}f}}{{}}".format(int(format_number[1:])).format(format_prefix, value, format_suffix)
         if format_number[-1] == "%":
             return "{}{:.0%}{}".format(format_prefix, value, format_suffix)
-        thousand_info = [
-            ("_", thousand_char) for thousand_char in "'," if thousand_char in format_number
-        ] + [("", "")]
+        thousand_info = [("_", thousand_char) for thousand_char in "'," if thousand_char in format_number] + [("", "")]
         thousand_flag, thousand_char = thousand_info[0]
         format_number = format_number.replace(",", "")
         digits, decimals = (format_number.split(".") + [""])[0:2]
@@ -237,9 +231,7 @@ class MergeField(object):
         len_decimals_plus_dot = 0 if not decimals else 1 + len(decimals)
         number_format_text = "{{}}{{:{zero_digits}{thousand_flag}{decimals}f}}{{}}".format(
             thousand_flag=thousand_flag,
-            zero_digits="0>{}".format(zero_digits + len_decimals_plus_dot)
-            if zero_digits > 1
-            else "",
+            zero_digits="0>{}".format(zero_digits + len_decimals_plus_dot) if zero_digits > 1 else "",
             decimals=".{}".format(len(decimals)),
         )
         # print(self.name, "<", option, ">", number_format_text)
@@ -249,9 +241,7 @@ class MergeField(object):
                 result = result.replace(thousand_flag, thousand_char)
             return result
         except Exception as e:
-            raise ValueError(
-                "Invalid number format <{}> with error <{}>".format(number_format_text, e)
-            )
+            raise ValueError("Invalid number format <{}> with error <{}>".format(number_format_text, e))
 
     def _format_date(self, value, flag, option):
         if value is None:
@@ -325,9 +315,7 @@ class MergeField(object):
         all_elements = self._all_elements[:]  # copy of all elements
         if not self._show_elements:
             separate_element = deepcopy(self._all_elements[-1])
-            separate_element.find("w:fldChar", namespaces=NAMESPACES).set(
-                "{%(w)s}fldCharType" % NAMESPACES, "separate"
-            )
+            separate_element.find("w:fldChar", namespaces=NAMESPACES).set("{%(w)s}fldCharType" % NAMESPACES, "separate")
             all_elements[-1:-1] = [separate_element] + self.filled_elements
         else:
             index = all_elements.index(self._show_elements[0])
@@ -353,9 +341,7 @@ class MergeField(object):
         for subelem in self._all_elements[1:]:
             self.parent.remove(subelem)
 
-        replacement_element = etree.Element(
-            "MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name
-        )
+        replacement_element = etree.Element("MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name)
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element
 
@@ -469,9 +455,7 @@ class MergeData(object):
                 for elem in elements
                 for text in elem.xpath("w:instrText/text()", namespaces=NAMESPACES)
                 + [
-                    "{{{}}}".format(obj_name)
-                    if not recursive
-                    else self.get_field_obj(obj_name).instr
+                    "{{{}}}".format(obj_name) if not recursive else self.get_field_obj(obj_name).instr
                     for obj_name in elem.xpath("@merge_key")
                 ]
             ]
@@ -578,9 +562,7 @@ class MergeData(object):
                 row = self.next_row()
 
     def _has_value_in_row(self, field_element, row):
-        return not (
-            field_element.get("name") and (row is None or field_element.get("name") not in row)
-        )
+        return not (field_element.get("name") and (row is None or field_element.get("name") not in row))
 
     def replace_field(self, field_element, field_obj=None, force_keep_field=False):
         """replaces a field element MergeField in the body with the filled_elements"""
@@ -647,9 +629,7 @@ class RelationsDocument(object):
         root = self.rel_part.getroot()
         new_relation = deepcopy(old_relation_elem)
         # print(etree.tostring(new_relation))
-        new_relation.attrib["Id"] = merge_data.unique_id_manager.register_id_str(
-            new_relation.attrib["Id"]
-        )
+        new_relation.attrib["Id"] = merge_data.unique_id_manager.register_id_str(new_relation.attrib["Id"])
         # print(old_relation_elem.attrib['Id'], "->", new_relation.attrib['Id'])
         new_relation.attrib["Target"] = new_target
         root.append(new_relation)
@@ -657,9 +637,7 @@ class RelationsDocument(object):
 
     def get_relation_elem(self, target):
         """returns the relation element for the"""
-        return self.rel_part.getroot().find(
-            'rr:Relationship[@Target="%s"]' % target, namespaces=NAMESPACES
-        )
+        return self.rel_part.getroot().find('rr:Relationship[@Target="%s"]' % target, namespaces=NAMESPACES)
 
     def get_all(self):
         """returns all relations"""
@@ -719,9 +697,9 @@ class MergeHeaderFooterDocument(object):
             new_target = self.target.replace(self.part_id, str(new_id))
             new_filename = self.zi.filename.replace(self.part_id, str(new_id))
             new_part_content_type = deepcopy(self.part_content_type)
-            new_part_content_type.attrib["PartName"] = self.part_content_type.attrib[
-                "PartName"
-            ].replace(self.target, new_target)
+            new_part_content_type.attrib["PartName"] = self.part_content_type.attrib["PartName"].replace(
+                self.target, new_target
+            )
             self.new_parts.append((new_filename, new_part_content_type, self._current_part))
             self._current_part = None
             return [(self.target, new_target)]
@@ -777,9 +755,7 @@ class MergeDocument(object):
                     type_element = None
 
             if type_element is None:
-                type_element = etree.SubElement(
-                    first_section, "{%(w)s}type" % NAMESPACES, attrib=None, nsmap=None
-                )
+                type_element = etree.SubElement(first_section, "{%(w)s}type" % NAMESPACES, attrib=None, nsmap=None)
 
             type_element.set("{%(w)s}val" % NAMESPACES, sep_type)
 
@@ -798,9 +774,7 @@ class MergeDocument(object):
         self._separator = etree.Element("{%(w)s}p" % NAMESPACES, attrib=None, nsmap=None)
 
         if sep_class == "section":
-            pPr = etree.SubElement(
-                self._separator, "{%(w)s}pPr" % NAMESPACES, attrib=None, nsmap=None
-            )
+            pPr = etree.SubElement(self._separator, "{%(w)s}pPr" % NAMESPACES, attrib=None, nsmap=None)
             pPr.append(deepcopy(self._last_section))
         elif sep_class == "break":
             r = etree.SubElement(self._separator, "{%(w)s}r" % NAMESPACES, attrib=None, nsmap=None)
@@ -857,9 +831,7 @@ class MergeDocument(object):
         if exc_type is None:
             # self.finish(True)
             for old_target, new_target in self._finish_rels:
-                self.replace_relation_reference(
-                    self.merge_data, old_target, new_target, sep=self._last_section
-                )
+                self.replace_relation_reference(self.merge_data, old_target, new_target, sep=self._last_section)
             self._body.append(self._last_section)
 
 
@@ -899,9 +871,7 @@ class MailMerge(object):
         self.parts = {}  # zi_part: ElementTree
         self.new_parts = []  # list of [(filename, part)]
         self.categories = {}  # category: [zi, ...]
-        self.merge_data = MergeData(
-            remove_empty_tables=remove_empty_tables, keep_fields=keep_fields
-        )
+        self.merge_data = MergeData(remove_empty_tables=remove_empty_tables, keep_fields=keep_fields)
         self.remove_empty_tables = remove_empty_tables
         self.auto_update_fields_on_open = auto_update_fields_on_open
         self.keep_fields = keep_fields
@@ -924,9 +894,7 @@ class MailMerge(object):
             categories = ["main", "header_footer", "notes"]
         elif isinstance(categories, str):
             categories = [categories]
-        return [
-            self.parts[zi] for category in categories for zi in self.categories.get(category, [])
-        ]
+        return [self.parts[zi] for category in categories for zi in self.categories.get(category, [])]
 
     def get_settings(self):
         """returns the settings part"""
@@ -1024,9 +992,7 @@ class MailMerge(object):
         # print('>>>>>>>')
         while field_char_type != "end":
             # find next sibling
-            next_element, field_char_subelem, field_char_type = self.__get_next_element(
-                current_element
-            )
+            next_element, field_char_subelem, field_char_type = self.__get_next_element(current_element)
 
             if next_element is None:
                 instr_text = self.merge_data.get_instr_text(instr_elements, recursive=True)
@@ -1035,9 +1001,7 @@ class MailMerge(object):
             if field_char_type == "begin":
                 # nested elements
                 assert elements_of_type_begin[0] is next_element
-                merge_field_sub_obj, next_element = self._pull_next_merge_field(
-                    elements_of_type_begin, nested=True
-                )
+                merge_field_sub_obj, next_element = self._pull_next_merge_field(elements_of_type_begin, nested=True)
                 if merge_field_sub_obj:
                     next_element = merge_field_sub_obj.insert_into_tree()
                 # print("current list is ignore", current_element_list is ignore_elements)

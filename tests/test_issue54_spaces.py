@@ -10,6 +10,4 @@ class Issue58SpacesTest(unittest.TestCase):
 
     def test_spaces(self):
         with MailMerge(os.path.join(self.path, "test_spaces.docx")) as document:
-            self.assertEqual(
-                document.get_merge_fields(), {"Singleword", "Hello world", "More than one space"}
-            )
+            self.assertEqual(document.get_merge_fields(), {"Singleword", "Hello world", "More than one space"})

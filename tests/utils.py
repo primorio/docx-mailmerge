@@ -38,13 +38,9 @@ class EtreeMixin(object):
             self.assert_equal_tree(lhs, rhs)
         except Exception:
             with open("expected.xml", "wb") as f:
-                f.write(
-                    etree.tostring(lhs.getroottree().getroot(), encoding="UTF-8", pretty_print=True)
-                )
+                f.write(etree.tostring(lhs.getroottree().getroot(), encoding="UTF-8", pretty_print=True))
             with open("real.xml", "wb") as f:
-                f.write(
-                    etree.tostring(rhs.getroottree().getroot(), encoding="UTF-8", pretty_print=True)
-                )
+                f.write(etree.tostring(rhs.getroottree().getroot(), encoding="UTF-8", pretty_print=True))
             raise
 
     def merge_templates(
@@ -59,9 +55,7 @@ class EtreeMixin(object):
         mt_kwargs={},
         output=None,
     ):
-        with MailMerge(
-            path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs) as document:
             document.merge_templates(replacements, separator, *mt_args, **mt_kwargs)
 
             if write_file:
@@ -75,9 +69,7 @@ class EtreeMixin(object):
             return document, get_document_body_part(document).getroot()
 
     def merge(self, filename, replacements, write_file=True, mm_args=[], mm_kwargs={}, output=None):
-        with MailMerge(
-            path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs) as document:
             document.merge(**replacements)
 
             if write_file:
@@ -113,9 +105,7 @@ class EtreeMixin(object):
         with zipfile.ZipFile(zip_buffer, "w") as output:
             for zi in self.docx_zipfile.filelist:
                 if zi in replacement_parts:
-                    xml = etree.tostring(
-                        replacement_parts[zi].getroot(), encoding="UTF-8", xml_declaration=True
-                    )
+                    xml = etree.tostring(replacement_parts[zi].getroot(), encoding="UTF-8", xml_declaration=True)
                     output.writestr(zi.filename, xml)
                 else:
                     output.writestr(zi.filename, self.docx_zipfile.read(zi))

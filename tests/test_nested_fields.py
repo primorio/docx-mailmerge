@@ -17,18 +17,14 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         """
         Fields are disjoint, no interference between the two complex fields
         """
-        with MailMerge(
-            path.join(path.dirname(__file__), "test_nested_if_outside.docx")
-        ) as document:
+        with MailMerge(path.join(path.dirname(__file__), "test_nested_if_outside.docx")) as document:
             self.assertEqual(document.get_merge_fields(), set(["fieldname"]))
 
             document.merge(fieldname="one")
 
             # self.assert_equal_tree_debug(get_document_body_part(document).getroot(), get_document_body_part(document).getroot()[0])
             self.assertEqual(
-                get_document_body_part(document)
-                .getroot()
-                .xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
+                get_document_body_part(document).getroot().xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
                 ["begin", "separate", "end"],
             )
 
@@ -54,9 +50,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             # output="tests/output/test_output_nested_if_outside.docx"
         )
         self.assertListEqual(
-            document.get_settings()
-            .getroot()
-            .xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
+            document.get_settings().getroot().xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
             [],
         )
 
@@ -67,9 +61,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             # output="tests/output/test_output_nested_if_outside.docx"
         )
         self.assertListEqual(
-            document.get_settings()
-            .getroot()
-            .xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
+            document.get_settings().getroot().xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
             [],
         )
 
@@ -113,9 +105,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             # debug to force writing down the xml documents
             # self.assert_equal_tree_debug(get_document_body_part(document).getroot(), get_document_body_part(document).getroot()[0])
             self.assertEqual(
-                get_document_body_part(document)
-                .getroot()
-                .xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
+                get_document_body_part(document).getroot().xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
                 ["begin", "begin", "separate", "end", "separate", "end"],
             )
 
@@ -153,9 +143,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             # output="tests/output/test_output_nested_if_inside.docx"
         )
         self.assertListEqual(
-            document.get_settings()
-            .getroot()
-            .xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
+            document.get_settings().getroot().xpath(UPDATE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
             [],
         )
 

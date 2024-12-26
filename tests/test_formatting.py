@@ -30,11 +30,7 @@ class FormattingTest(EtreeMixin, unittest.TestCase):
                 with tempfile.TemporaryFile() as outfile:
                     document.write(outfile)
 
-            output_fields = (
-                get_document_body_part(document)
-                .getroot()
-                .xpath(".//w:r/w:t/text()", namespaces=NAMESPACES)
-            )
+            output_fields = get_document_body_part(document).getroot().xpath(".//w:r/w:t/text()", namespaces=NAMESPACES)
             self.assertEqual(
                 output_fields,
                 [output_value for _, output_value in value_list],
@@ -181,14 +177,10 @@ class FormattingTest(EtreeMixin, unittest.TestCase):
         )
 
     def test_text_before(self):
-        self._test_formats(
-            "\\b", {" - ": [("handsome law group", " - handsome law group"), ("", "")]}
-        )
+        self._test_formats("\\b", {" - ": [("handsome law group", " - handsome law group"), ("", "")]})
 
     def test_text_afterward(self):
-        self._test_formats(
-            "\\f", {" - ": [("handsome law group", "handsome law group - "), ("", "")]}
-        )
+        self._test_formats("\\f", {" - ": [("handsome law group", "handsome law group - "), ("", "")]})
 
     def test_text_b_and_f(self):
         self._test_formats("\\b", {'(" \\f ")': [(2, "(2)"), ("", "")]})

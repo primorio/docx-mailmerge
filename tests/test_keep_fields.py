@@ -4,9 +4,7 @@ from mailmerge import NAMESPACES
 from tests.utils import TEXTS_XPATH, EtreeMixin
 
 MERGE_FIELDS_TRUE_XPATH = "./w:mailMerge"
-SEPARATE_TEXT_FIELDS_XPATH = (
-    '//w:fldChar[@w:fldCharType = "separate"]/../following-sibling::w:r/w:t/text()'
-)
+SEPARATE_TEXT_FIELDS_XPATH = '//w:fldChar[@w:fldCharType = "separate"]/../following-sibling::w:r/w:t/text()'
 SIMPLE_FIELDS_TEXT_FIELDS_XPATH = "//w:fldSimple/w:r/w:t/text()"
 VALUES = {"first": "one", "three_simple": "three_simple"}
 TEST_DOCX = "test_keep_fields.docx"
@@ -41,9 +39,7 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
             root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES),
             ["one", "«second»", "three_simple", "«four_simple»"],
         )
-        self.assertListEqual(
-            root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), ["one", "«second»"]
-        )
+        self.assertListEqual(root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), ["one", "«second»"])
         self.assertListEqual(
             root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES),
             ["three_simple", "«four_simple»"],
@@ -67,9 +63,7 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
             root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES),
             ["one", "«second»", "three_simple", "«four_simple»"],
         )
-        self.assertListEqual(
-            root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), ["«second»"]
-        )
+        self.assertListEqual(root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), ["«second»"])
         self.assertListEqual(
             root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES),
             ["«four_simple»"],
@@ -89,10 +83,6 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
             document.get_settings().getroot().xpath(MERGE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
             [],
         )
-        self.assertListEqual(
-            root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES), ["one", "", "three_simple", ""]
-        )
+        self.assertListEqual(root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES), ["one", "", "three_simple", ""])
         self.assertListEqual(root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), [])
-        self.assertListEqual(
-            root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), []
-        )
+        self.assertListEqual(root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), [])

@@ -8,9 +8,7 @@ from tests.utils import EtreeMixin, get_document_body_part
 
 class MergeMultipleTableRowsTest(EtreeMixin, unittest.TestCase):
     def setUp(self):
-        self.document = MailMerge(
-            path.join(path.dirname(__file__), "test_merge_multiple_table_rows.docx")
-        )
+        self.document = MailMerge(path.join(path.dirname(__file__), "test_merge_multiple_table_rows.docx"))
 
     def test_merge_rows(self):
         self.assertEqual(
