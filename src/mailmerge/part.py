@@ -6,8 +6,126 @@ from copy import deepcopy
 from lxml import etree
 
 from .constants import MAKE_TESTS_HAPPY, NAMESPACES, VALID_SEPARATORS
+from .field import SimpleMergeField
 
 PARTFILENAME_RE = re.compile(r"([A-Za-z_]+)(\d+).xml")
+
+
+class Part:
+    """generic part"""
+
+    def __init__(self, merge_data, part):
+        self.merge_data = merge_data
+        self.part = part
+
+    def parse(self):
+        self.__fill_simple_fields()
+        self.__fill_complex_fields()
+
+    def __fill_simple_fields(self):
+        for fld_simple_elem in self.part.findall(".//{%(w)s}fldSimple" % NAMESPACES):
+            first_run_elem = deepcopy(fld_simple_elem.find("{%(w)s}r" % NAMESPACES))
+            if MAKE_TESTS_HAPPY:
+                first_run_elem.clear()
+            merge_field_obj = self.merge_data.make_data_field(
+                fld_simple_elem.getparent(),
+                instr=fld_simple_elem.get("{%(w)s}instr" % NAMESPACES),
+                field_class=SimpleMergeField,
+                all_elements=[fld_simple_elem],
+                instr_elements=[first_run_elem],
+                show_elements=[first_run_elem],
+            )
+            if merge_field_obj:
+                merge_field_obj.insert_into_tree()
+
+    def __get_next_element(self, current_element):
+        """returns the next element of a complex field"""
+        next_element = current_element.getnext()
+        current_paragraph = current_element.getparent()
+        # we search through paragraphs for the next <w:r> element
+        while next_element is None:
+            current_paragraph = current_paragraph.getnext()
+            if current_paragraph is None:
+                return None, None, None
+            next_element = current_paragraph.find("w:r", namespaces=NAMESPACES)
+
+        # print(''.join(next_element.xpath('w:instrText/text()', namespaces=NAMESPACES)))
+        field_char_subelem = next_element.find("w:fldChar", namespaces=NAMESPACES)
+        if field_char_subelem is None:
+            return next_element, None, None
+
+        return (
+            next_element,
+            field_char_subelem,
+            field_char_subelem.xpath("@w:fldCharType", namespaces=NAMESPACES)[0],
+        )
+
+    def _pull_next_merge_field(self, elements_of_type_begin, nested=False):
+        assert elements_of_type_begin
+        current_element = elements_of_type_begin.pop(0)
+        parent_element = current_element.getparent()
+        all_elements = []  # we need all the elments in case of updates
+        instr_elements = []  # the instruction part, elements that define how to get the value
+        show_elements = []  # the elements showing the current value
+
+        current_element_list = instr_elements
+        all_elements.append(current_element)
+
+        # good_elements = []
+        # ignore_elements = [current_element]
+        # current_element_list = good_elements
+        field_char_type = None
+
+        # print('>>>>>>>')
+        while field_char_type != "end":
+            # find next sibling
+            next_element, field_char_subelem, field_char_type = self.__get_next_element(current_element)
+
+            if next_element is None:
+                instr_text = self.merge_data.get_instr_text(instr_elements, recursive=True)
+                raise ValueError("begin without end near:" + instr_text)
+
+            if field_char_type == "begin":
+                # nested elements
+                assert elements_of_type_begin[0] is next_element
+                merge_field_sub_obj, next_element = self._pull_next_merge_field(elements_of_type_begin, nested=True)
+                if merge_field_sub_obj:
+                    next_element = merge_field_sub_obj.insert_into_tree()
+                # print("current list is ignore", current_element_list is ignore_elements)
+                # print("<<<<< #####", etree.tostring(next_element))
+            elif field_char_type == "separate":
+                current_element_list = show_elements
+            elif next_element.tag == "MergeField":
+                # we have a nested simple Field - mark it as nested
+                self.merge_data.mark_field_as_nested(next_element.get("merge_key"))
+
+            if field_char_type not in ["end", "separate"]:
+                current_element_list.append(next_element)
+            all_elements.append(next_element)
+            current_element = next_element
+
+        # print('<<<<<<<', len(good_elements), len(ignore_elements))
+        merge_obj = self.merge_data.make_data_field(
+            parent_element,
+            nested=nested,
+            all_elements=all_elements,
+            instr_elements=instr_elements,
+            show_elements=show_elements,
+        )
+        return merge_obj, current_element
+
+    def __fill_complex_fields(self):
+        """finds all begin fields and then builds the MergeField objects and inserts the replacement
+        Elements in the tree"""
+        # will find all "runs" containing an element of fldChar type=begin
+        elements_of_type_begin = list(
+            self.part.findall('.//{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..' % NAMESPACES)
+        )
+        while elements_of_type_begin:
+            merge_field_obj, _ = self._pull_next_merge_field(elements_of_type_begin)
+            if merge_field_obj:
+                # print(merge_field_obj.instr)
+                merge_field_obj.insert_into_tree()
 
 
 class NewPart:

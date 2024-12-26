@@ -3,8 +3,8 @@ import unittest
 from os import path
 
 from lxml import etree
-
 from mailmerge import MailMerge
+
 from tests.utils import EtreeMixin, get_document_body_part
 
 
@@ -65,4 +65,4 @@ class MergeTableRowsMultipartTest(EtreeMixin, unittest.TestCase):
         self.assert_equal_tree(self.expected_tree, get_document_body_part(self.document).getroot())
 
     def tearDown(self):
-        self.document.close()
+        self.document.docx.close()

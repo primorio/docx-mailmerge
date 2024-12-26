@@ -113,7 +113,7 @@ class EtreeMixin(object):
 
 
 def get_document_body_part(document, endswith="document"):
-    for part in document.parts.values():
+    for part in document.docx.parts.values():
         if part["part"].getroot().tag.endswith("}%s" % endswith):
             return part["part"]
 
@@ -122,7 +122,7 @@ def get_document_body_part(document, endswith="document"):
 
 def get_document_body_parts(document, endswith="document"):
     parts = []
-    for part in document.parts.values():
+    for part in document.docx.parts.values():
         if part["part"].getroot().tag.endswith("}%s" % endswith):
             parts.append(part["part"])
     for new_part in document.new_parts:
