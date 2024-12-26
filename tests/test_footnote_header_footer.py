@@ -1,6 +1,6 @@
 import unittest
 
-from mailmerge.mailmerge import NAMESPACES
+from mailmerge import NAMESPACES
 
 from tests.utils import TEXTS_XPATH, EtreeMixin, get_document_body_part, get_document_body_parts
 
@@ -11,7 +11,6 @@ class FootnoteHeaderFooterTest(EtreeMixin, unittest.TestCase):
     # @TODO test missing values
     # @TODO test if separator isn't section
     # @TODO test headers/footers with relations
-    # @unittest.expectedFailure
     def test_all_header_footer(self):
         values = ["one", "two", "three"]
         # header/footer/footnotes don't work with multiple replacements, only with merge
