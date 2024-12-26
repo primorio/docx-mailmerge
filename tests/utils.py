@@ -86,13 +86,13 @@ class EtreeMixin(object):
         self.docx_zipfile = zipfile.ZipFile(filename)
         self.docx_parts = {}
 
-        content_types = etree.parse(self.docx_zipfile.open("[Content_Types].xml"))
+        content_types = etree.parse(self.docx_zipfile.open("[Content_Types].xml"), parser=None)
         for file_elem in content_types.findall("{%(ct)s}Override" % NAMESPACES):
             part_type = file_elem.attrib["ContentType" % NAMESPACES]
             if part_type in CONTENT_TYPES_PARTS:
                 fn = file_elem.attrib["PartName" % NAMESPACES].split("/", 1)[1]
                 zi = self.docx_zipfile.getinfo(fn)
-                self.docx_parts[zi] = etree.parse(self.docx_zipfile.open(zi))
+                self.docx_parts[zi] = etree.parse(self.docx_zipfile.open(zi), parser=None)
 
     def get_part(self, endswidth="}document"):
         for zi, part in self.docx_parts.items():
