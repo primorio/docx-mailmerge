@@ -395,7 +395,6 @@ class UniqueIdsManager(object):
 
 
 class MergeData(object):
-
     """prepare the MergeField objects and the data"""
 
     SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT"}
@@ -708,7 +707,6 @@ class MergeHeaderFooterDocument(object):
 
 
 class MergeDocument(object):
-
     """prepare and merge one document
 
     helper class to handle the actual merging of one document
@@ -836,7 +834,6 @@ class MergeDocument(object):
 
 
 class MailMerge(object):
-
     """
     MailMerge class to write an output docx document by merging data rows to a template
 
