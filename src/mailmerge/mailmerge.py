@@ -1,6 +1,7 @@
 import os
 import warnings
 from copy import deepcopy
+from dataclasses import dataclass
 
 # import locale
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -12,6 +13,13 @@ from .field import SimpleMergeField, SkipRecord
 from .mergedata import MergeData
 from .part import MergeDocument, MergeHeaderFooterDocument
 from .rels import RelationsDocument
+
+
+@dataclass
+class MailMergeSettings:
+    remove_empty_tables: bool
+    auto_update_fields_on_open: str
+    keep_fields: str
 
 
 class MailMerge(object):
@@ -44,14 +52,13 @@ class MailMerge(object):
         auto_update_fields_on_open : no, auto, always - auto = only when needed
         keep_fields : none - merge all fields even if no data, some - keep fields with no data, all - keep all fields
         """
+        self.settings = MailMergeSettings(remove_empty_tables, auto_update_fields_on_open, keep_fields)
         self.zip = ZipFile(file)
         self.zip_is_closed = False
         self.parts = {}  # zi_part: ElementTree
         self.new_parts = []  # list of [(filename, part)]
         self.categories = {}  # category: [zi, ...]
-        self.merge_data = MergeData(remove_empty_tables=remove_empty_tables, keep_fields=keep_fields)
-        self.auto_update_fields_on_open = auto_update_fields_on_open
-        self.keep_fields = keep_fields
+        self.merge_data = MergeData(settings=self.settings)
         self._has_unmerged_fields = False
 
         try:
@@ -65,13 +72,19 @@ class MailMerge(object):
             self.zip.close()
             raise
 
-    @property
-    def remove_empty_tables(self):
-        return self.merge_data.remove_empty_tables
+    def __getattr__(self, name):
+        return getattr(self.settings, name)
 
-    @remove_empty_tables.setter
-    def remove_empty_tables(self, value):
-        self.merge_data.remove_empty_tables = value
+    def __setattr__(self, name, value):
+        if name in MailMergeSettings.__annotations__:
+            warnings.warn(
+                "setting configuration values has been deprecated. Use .settings.{} = <value>".format(name),
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            setattr(self.settings, name, value)
+            return
+        super().__setattr__(name, value)
 
     def get_parts(self, categories=None):
         """return all the parts based on categories"""

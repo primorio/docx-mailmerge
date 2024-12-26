@@ -13,13 +13,12 @@ class MergeData(object):
     SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT"}
     FIELD_CLASSES = {"NEXT": NextField}
 
-    def __init__(self, remove_empty_tables=False, keep_fields="none"):
+    def __init__(self, settings):
         self._merge_field_map = {}  # merge_field.key: MergeField()
         self._merge_field_next_id = 0
         self.unique_id_manager = UniqueIdsManager()
         self.has_nested_fields = False
-        self.remove_empty_tables = remove_empty_tables
-        self.keep_fields = keep_fields
+        self.settings = settings
         self.replace_fields_with_missing_data = False
         self._rows = None
         self._current_index = None
@@ -180,7 +179,7 @@ class MergeData(object):
         """replaces a field element MergeField in the body with the filled_elements"""
         # assert len(filled_field.filled_elements) == 1
         if field_obj:
-            keep_field = force_keep_field or self.keep_fields == "all"
+            keep_field = force_keep_field or self.settings.keep_fields == "all"
             elements_to_replace = field_obj.get_elements_to_replace(keep_field=keep_field)
             for text_element in reversed(elements_to_replace):
                 field_element.addnext(text_element)
@@ -198,7 +197,7 @@ class MergeData(object):
             else:
                 # if there is no data for a given table
                 # we check whether table needs to be removed
-                if self.remove_empty_tables:
+                if self.settings.remove_empty_tables:
                     parent = table.getparent()
                     parent.remove(table)
 
