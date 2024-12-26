@@ -131,7 +131,9 @@ class MergeField(object):
         """
         self.parent = parent
         self.nested = nested
-        self.key = key  # the key of this MergeField to be able to identify it. It is used as the name in the replaced MergeField element
+        # the key of this MergeField to be able to identify it. It is used as the name in
+        # the replaced MergeField element
+        self.key = key
         # the list of elements to add when merging
         self._all_elements = [] if all_elements is None else all_elements
         self._instr_elements = [] if instr_elements is None else instr_elements
@@ -746,11 +748,11 @@ class MergeDocument(object):
         # if sep_class == 'section':
         #     self._set_section_type()
 
-        self._last_section = None  # saving the last section to add it at the end
-        self._body = None  # the document body, where all the documents are appended
-        self._body_copy = None  # a deep copy of the original body without ending section
-        self._current_body = None  # the current document body where all the changes are merged
-        self._current_separator = None
+        # self._last_section = None  # saving the last section to add it at the end
+        # self._body = None  # the document body, where all the documents are appended
+        # self._body_copy = None  # a deep copy of the original body without ending section
+        # self._current_body = None  # the current document body where all the changes are merged
+        # self._current_separator = None
         self._finish_rels = []
         self._prepare_data(separator)
 
@@ -869,12 +871,14 @@ class MailMerge(object):
     The class uses the builtin MergeFields in Word. There are two kind of data fields, simple and complex.
     http://officeopenxml.com/WPfields.php
     The MERGEFIELD can have MERGEFORMAT
-    MERGEFIELD can be nested inside other "complex" fields, in which case those fields should be updated in the saved docx
+    MERGEFIELD can be nested inside other "complex" fields, in which case those fields should be updated
+    in the saved docx
 
     MailMerge implements this by finding all Fields and replacing them with placeholder Elements of type
     MergeElement
 
-    Those MergeElement elements will then be replaced for each run with a list of elements containing run elements with texts.
+    Those MergeElement elements will then be replaced for each run with a list of elements containing run
+    elements with texts.
     The MergeElement value (list of run Elements) should be computed recursively for the inner MergeElements
 
     """
@@ -891,6 +895,7 @@ class MailMerge(object):
         keep_fields : none - merge all fields even if no data, some - keep fields with no data, all - keep all fields
         """
         self.zip = ZipFile(file)
+        self.zip_is_closed = False
         self.parts = {}  # zi_part: ElementTree
         self.new_parts = []  # list of [(filename, part)]
         self.categories = {}  # category: [zi, ...]
@@ -909,7 +914,7 @@ class MailMerge(object):
                 self.__fill_simple_fields(part_info["part"])
                 self.__fill_complex_fields(part_info["part"])
 
-        except:
+        except Exception:
             self.zip.close()
             raise
 
@@ -1059,7 +1064,8 @@ class MailMerge(object):
         return merge_obj, current_element
 
     def __fill_complex_fields(self, part):
-        """finds all begin fields and then builds the MergeField objects and inserts the replacement Elements in the tree"""
+        """finds all begin fields and then builds the MergeField objects and inserts the replacement
+        Elements in the tree"""
         # will find all "runs" containing an element of fldChar type=begin
         elements_of_type_begin = list(
             part.findall('.//{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..' % NAMESPACES)
@@ -1159,10 +1165,13 @@ class MailMerge(object):
         - column_break : Column Break. ONLY HAVE EFFECT IF DOCUMENT HAVE COLUMNS
         - textWrapping_break : Line Break.
         - continuous_section : Continuous section break. Begins the section on the next paragraph.
-        - evenPage_section : evenPage section break. section begins on the next even-numbered page, leaving the next odd page blank if necessary.
-        - nextColumn_section : nextColumn section break. section begins on the following column on the page. ONLY HAVE EFFECT IF DOCUMENT HAVE COLUMNS
+        - evenPage_section : evenPage section break. section begins on the next even-numbered page, leaving the next
+            odd page blank if necessary.
+        - nextColumn_section : nextColumn section break. section begins on the following column on the page.
+            ONLY HAVE EFFECT IF DOCUMENT HAVE COLUMNS
         - nextPage_section : nextPage section break. section begins on the following page.
-        - oddPage_section : oddPage section break. section begins on the next odd-numbered page, leaving the next even page blank if necessary.
+        - oddPage_section : oddPage section break. section begins on the next odd-numbered page, leaving the next even
+            page blank if necessary.
         """
         assert replacements, "empty data"
         # TYPE PARAM CONTROL AND SPLIT
@@ -1177,7 +1186,8 @@ class MailMerge(object):
                 merge_header_footer_doc.id_type, int(merge_header_footer_doc.part_id)
             )
 
-        # Duplicate template. Creates a copy of the template, does a merge, and separates them by a new paragraph, a new break or a new section break.
+        # Duplicate template. Creates a copy of the template, does a merge, and separates them by a new paragraph,
+        # a new break or a new section break.
 
         # GET ROOT - WORK WITH DOCUMENT
         for part_info in self.get_parts(["main"]):
@@ -1247,8 +1257,8 @@ class MailMerge(object):
         self.close()
 
     def close(self):
-        if self.zip is not None:
+        if not self.zip_is_closed:
             try:
                 self.zip.close()
             finally:
-                self.zip = None
+                self.zip_is_closed = True

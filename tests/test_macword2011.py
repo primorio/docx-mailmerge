@@ -1,6 +1,7 @@
-import unittest
 import tempfile
+import unittest
 from os import path
+
 from lxml import etree
 
 from mailmerge import MailMerge
@@ -9,15 +10,33 @@ from tests.utils import EtreeMixin, get_document_body_part
 
 class MacWord2011Test(EtreeMixin, unittest.TestCase):
     def test(self):
-        with MailMerge(path.join(path.dirname(__file__), 'test_macword2011.docx')) as document:
-            self.assertEqual(document.get_merge_fields(),
-                             set(['first_name', 'last_name', 'country', 'state',
-                                  'postal_code', 'date', 'address_line', 'city']))
+        with MailMerge(path.join(path.dirname(__file__), "test_macword2011.docx")) as document:
+            self.assertEqual(
+                document.get_merge_fields(),
+                set(
+                    [
+                        "first_name",
+                        "last_name",
+                        "country",
+                        "state",
+                        "postal_code",
+                        "date",
+                        "address_line",
+                        "city",
+                    ]
+                ),
+            )
 
-            document.merge(first_name='Bouke', last_name='Haarsma',
-                           country='The Netherlands', state=None,
-                           postal_code='9723 ZA', city='Groningen',
-                           address_line='Helperpark 278d', date='May 22nd, 2013')
+            document.merge(
+                first_name="Bouke",
+                last_name="Haarsma",
+                country="The Netherlands",
+                state=None,
+                postal_code="9723 ZA",
+                city="Groningen",
+                address_line="Helperpark 278d",
+                date="May 22nd, 2013",
+            )
 
             with tempfile.TemporaryFile() as outfile:
                 document.write(outfile)
@@ -55,6 +74,7 @@ class MacWord2011Test(EtreeMixin, unittest.TestCase):
             'ns1:textId="77777777" w:rsidR="00916690" w:rsidRDefault="00916690"><w:r><w:t>docx-mailmerge'
             '.</w:t></w:r></w:p><w:sectPr w:rsidR="00916690" w:rsidSect="00CA5A66"><w:pgSz w:h="16840" w:w="11900" '
             '/><w:pgMar w:bottom="1417" w:footer="708" w:gutter="0" w:header="708" w:left="1417" w:right="1417" '
-            'w:top="1417" /><w:cols w:space="708" /><w:docGrid w:linePitch="360" /></w:sectPr></w:body></w:document>')
+            'w:top="1417" /><w:cols w:space="708" /><w:docGrid w:linePitch="360" /></w:sectPr></w:body></w:document>'
+        )
 
         self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())

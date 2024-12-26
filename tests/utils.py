@@ -36,7 +36,7 @@ class EtreeMixin(object):
     def assert_equal_tree_debug(self, lhs, rhs):
         try:
             self.assert_equal_tree(lhs, rhs)
-        except:
+        except Exception:
             with open("expected.xml", "wb") as f:
                 f.write(
                     etree.tostring(lhs.getroottree().getroot(), encoding="UTF-8", pretty_print=True)

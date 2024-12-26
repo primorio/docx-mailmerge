@@ -1,6 +1,7 @@
-import unittest
 import tempfile
+import unittest
 from os import path
+
 from lxml import etree
 
 from mailmerge import MailMerge
@@ -9,11 +10,12 @@ from tests.utils import EtreeMixin, get_document_body_part
 
 class MultipleElementsTest(EtreeMixin, unittest.TestCase):
     def test(self):
-        with MailMerge(path.join(path.dirname(__file__), 'test_multiple_elements.docx')) as document:
-            self.assertEqual(document.get_merge_fields(),
-                             set(['foo', 'bar', 'gak']))
+        with MailMerge(
+            path.join(path.dirname(__file__), "test_multiple_elements.docx")
+        ) as document:
+            self.assertEqual(document.get_merge_fields(), set(["foo", "bar", "gak"]))
 
-            document.merge(foo='one', bar='two', gak='three')
+            document.merge(foo="one", bar="two", gak="three")
 
             with tempfile.TemporaryFile() as outfile:
                 document.write(outfile)
@@ -47,6 +49,7 @@ class MultipleElementsTest(EtreeMixin, unittest.TestCase):
                 'w:val="22"/></w:rPr><w:t>three</w:t></w:r></w:p><w:sectPr w:rsidR="004B5BC1" w:rsidRPr="00335531" '
                 'w:rsidSect="0090608D"><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" '
                 'w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/><w:cols '
-                'w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr></w:body></w:document>')
+                'w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr></w:body></w:document>'
+            )
 
             self.assert_equal_tree(expected_tree, get_document_body_part(document).getroot())

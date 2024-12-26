@@ -36,7 +36,7 @@ Issues = "http://github.com/iulica/docx-mailmerge/issues"
 [tool.ruff]
 exclude = []
 line-length = 100
-target-version = "py38"
+# target-version = "py38"
 
 [tool.setuptools.dynamic]
 version = {attr = "mailmerge.__version__"}
