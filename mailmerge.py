@@ -29,9 +29,7 @@ ATTACHMENT_TAGS = [
     "endnotes",  # endnotes
 ]
 
-ATTACHMENT_TAGS_WITH_NAMESPACE = {
-    "{%(w)s}" % NAMESPACES + tag for tag in ATTACHMENT_TAGS
-}
+ATTACHMENT_TAGS_WITH_NAMESPACE = {"{%(w)s}" % NAMESPACES + tag for tag in ATTACHMENT_TAGS}
 
 CONTENT_TYPES_PARTS = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml": "main",
@@ -57,9 +55,7 @@ VALID_SEPARATORS = {
 PARTFILENAME_RE = re.compile(r"([A-Za-z_]+)(\d+).xml")
 IDSTR_RE = re.compile(r"([A-Za-z_]+)(\d+)")
 NUMBERFORMAT_RE = re.compile(r"([^0.,'#PN]+)?(P\d+|N\d+|[0.,'#]+%?)([^0.,'#%].*)?")
-DATEFORMAT_RE = "|".join(
-    [r"{}+".format(switch) for switch in "yYmMdDhHsS"] + [r"am/pm", r"AM/PM"]
-)
+DATEFORMAT_RE = "|".join([r"{}+".format(switch) for switch in "yYmMdDhHsS"] + [r"am/pm", r"AM/PM"])
 DATEFORMAT_MAP = {
     "M": "{d.month}",
     "MM": "%m",
@@ -229,24 +225,20 @@ class MergeField(object):
         if format_number[-1] == "%":
             return "{}{:.0%}{}".format(format_prefix, value, format_suffix)
         thousand_info = [
-            ("_", thousand_char)
-            for thousand_char in "',"
-            if thousand_char in format_number
+            ("_", thousand_char) for thousand_char in "'," if thousand_char in format_number
         ] + [("", "")]
         thousand_flag, thousand_char = thousand_info[0]
         format_number = format_number.replace(",", "")
         digits, decimals = (format_number.split(".") + [""])[0:2]
         zero_digits = len(digits.replace("#", ""))
-        zero_decimals = len(decimals.replace("#", ""))
+        _zero_decimals = len(decimals.replace("#", ""))
         len_decimals_plus_dot = 0 if not decimals else 1 + len(decimals)
-        number_format_text = (
-            "{{}}{{:{zero_digits}{thousand_flag}{decimals}f}}{{}}".format(
-                thousand_flag=thousand_flag,
-                zero_digits="0>{}".format(zero_digits + len_decimals_plus_dot)
-                if zero_digits > 1
-                else "",
-                decimals=".{}".format(len(decimals)),
-            )
+        number_format_text = "{{}}{{:{zero_digits}{thousand_flag}{decimals}f}}{{}}".format(
+            thousand_flag=thousand_flag,
+            zero_digits="0>{}".format(zero_digits + len_decimals_plus_dot)
+            if zero_digits > 1
+            else "",
+            decimals=".{}".format(len(decimals)),
         )
         # print(self.name, "<", option, ">", number_format_text)
         try:
@@ -256,9 +248,7 @@ class MergeField(object):
             return result
         except Exception as e:
             raise ValueError(
-                "Invalid number format <{}> with error <{}>".format(
-                    number_format_text, e
-                )
+                "Invalid number format <{}> with error <{}>".format(number_format_text, e)
             )
 
     def _format_date(self, value, flag, option):
@@ -287,11 +277,7 @@ class MergeField(object):
         try:
             value = self._format(value)
         except Exception as e:
-            warnings.warn(
-                "Invalid formatting for field <{}> with error <{}>".format(
-                    self.instr, e
-                )
-            )
+            warnings.warn("Invalid formatting for field <{}> with error <{}>".format(self.instr, e))
             # raise
 
         self.filled_value = value
@@ -343,9 +329,7 @@ class MergeField(object):
             all_elements[-1:-1] = [separate_element] + self.filled_elements
         else:
             index = all_elements.index(self._show_elements[0])
-            all_elements[
-                index : index + len(self._show_elements)
-            ] = self.filled_elements
+            all_elements[index : index + len(self._show_elements)] = self.filled_elements
         return all_elements
 
     def _make_br(self):
@@ -367,9 +351,7 @@ class MergeField(object):
         for subelem in self._all_elements[1:]:
             self.parent.remove(subelem)
 
-        replacement_element = etree.Element(
-            "MergeField", merge_key=self.key, name=self.name
-        )
+        replacement_element = etree.Element("MergeField", merge_key=self.key, name=self.name)
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element
 
@@ -535,9 +517,7 @@ class MergeData(object):
             tokens = list(self._get_instr_tokens(instr))
         except ValueError as e:
             tokens = [field_type] + list(map(lambda part: part.replace('"', ""), rest))
-            warnings.warn(
-                "Invalid field description <{}> near: <{}>".format(str(e), instr)
-            )
+            warnings.warn("Invalid field description <{}> near: <{}>".format(str(e), instr))
 
         # print("make data object", field_class, instr, len(elements), len(kwargs.get('ignore_elements', [])))
         field_obj = field_class(
@@ -573,9 +553,7 @@ class MergeData(object):
 
     def replace(self, body, row):
         """replaces in the body xml tree the MergeField elements with values from the row"""
-        all_tables = {
-            key: value for key, value in row.items() if isinstance(value, list)
-        }
+        all_tables = {key: value for key, value in row.items() if isinstance(value, list)}
 
         for anchor, table_rows in all_tables.items():
             self.replace_table_rows(body, anchor, table_rows)
@@ -597,8 +575,7 @@ class MergeData(object):
 
     def _has_value_in_row(self, field_element, row):
         return not (
-            field_element.get("name")
-            and (row is None or field_element.get("name") not in row)
+            field_element.get("name") and (row is None or field_element.get("name") not in row)
         )
 
     def replace_field(self, field_element, field_obj=None, force_keep_field=False):
@@ -606,9 +583,7 @@ class MergeData(object):
         # assert len(filled_field.filled_elements) == 1
         if field_obj:
             keep_field = force_keep_field or self.keep_fields == "all"
-            elements_to_replace = field_obj.get_elements_to_replace(
-                keep_field=keep_field
-            )
+            elements_to_replace = field_obj.get_elements_to_replace(keep_field=keep_field)
             for text_element in reversed(elements_to_replace):
                 field_element.addnext(text_element)
         field_element.getparent().remove(field_element)
@@ -701,9 +676,7 @@ class MergeHeaderFooterDocument(object):
         self.part = part_info["part"]
         self.relations = relations
         self.sep_type = None
-        self.target, self.id_type, self.part_id = self._parse_part_filename(
-            self.zi.filename
-        )
+        self.target, self.id_type, self.part_id = self._parse_part_filename(self.zi.filename)
         self.new_parts = []  # list of (filename, root) parts
         self._current_part = None
         self.has_fields = bool(self.part.findall(".//MergeField"))
@@ -745,9 +718,7 @@ class MergeHeaderFooterDocument(object):
             new_part_content_type.attrib["PartName"] = self.part_content_type.attrib[
                 "PartName"
             ].replace(self.target, new_target)
-            self.new_parts.append(
-                (new_filename, new_part_content_type, self._current_part)
-            )
+            self.new_parts.append((new_filename, new_part_content_type, self._current_part))
             self._current_part = None
             return [(self.target, new_target)]
 
@@ -775,12 +746,8 @@ class MergeDocument(object):
 
         self._last_section = None  # saving the last section to add it at the end
         self._body = None  # the document body, where all the documents are appended
-        self._body_copy = (
-            None  # a deep copy of the original body without ending section
-        )
-        self._current_body = (
-            None  # the current document body where all the changes are merged
-        )
+        self._body_copy = None  # a deep copy of the original body without ending section
+        self._current_body = None  # the current document body where all the changes are merged
         self._current_separator = None
         self._finish_rels = []
         self._prepare_data(separator)
@@ -794,9 +761,7 @@ class MergeDocument(object):
 
         if sep_class == "section":
             # FINDING FIRST SECTION OF THE DOCUMENT
-            first_section = self.root.find(
-                "w:body/w:p/w:pPr/w:sectPr", namespaces=NAMESPACES
-            )
+            first_section = self.root.find("w:body/w:p/w:pPr/w:sectPr", namespaces=NAMESPACES)
             if first_section is None:
                 first_section = self.root.find("w:body/w:sectPr", namespaces=NAMESPACES)
 
@@ -808,9 +773,7 @@ class MergeDocument(object):
                     type_element = None
 
             if type_element is None:
-                type_element = etree.SubElement(
-                    first_section, "{%(w)s}type" % NAMESPACES
-                )
+                type_element = etree.SubElement(first_section, "{%(w)s}type" % NAMESPACES)
 
             type_element.set("{%(w)s}val" % NAMESPACES, sep_type)
 
@@ -863,13 +826,9 @@ class MergeDocument(object):
             sep = self._current_separator
 
         old_relation = self.relations.get_relation_elem(old_target)
-        new_rel_id = self.relations.replace_relation(
-            merge_data, old_relation, new_target
-        )
+        new_rel_id = self.relations.replace_relation(merge_data, old_relation, new_target)
 
-        for elem in sep.xpath(
-            '//*[@r:id="%s"]' % old_relation.attrib["Id"], namespaces=NAMESPACES
-        ):
+        for elem in sep.xpath('//*[@r:id="%s"]' % old_relation.attrib["Id"], namespaces=NAMESPACES):
             elem.attrib["{%(r)s}id" % NAMESPACES] = new_rel_id
 
     def finish(self, finish_rels, abort=False):
@@ -955,9 +914,7 @@ class MailMerge(object):
         elif isinstance(categories, str):
             categories = [categories]
         return [
-            self.parts[zi]
-            for category in categories
-            for zi in self.categories.get(category, [])
+            self.parts[zi] for category in categories for zi in self.categories.get(category, [])
         ]
 
     def get_settings(self):
@@ -1061,9 +1018,7 @@ class MailMerge(object):
             )
 
             if next_element is None:
-                instr_text = self.merge_data.get_instr_text(
-                    instr_elements, recursive=True
-                )
+                instr_text = self.merge_data.get_instr_text(instr_elements, recursive=True)
                 raise ValueError("begin without end near:" + instr_text)
 
             if field_char_type == "begin":
@@ -1101,10 +1056,7 @@ class MailMerge(object):
         """finds all begin fields and then builds the MergeField objects and inserts the replacement Elements in the tree"""
         # will find all "runs" containing an element of fldChar type=begin
         elements_of_type_begin = list(
-            part.findall(
-                './/{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..'
-                % NAMESPACES
-            )
+            part.findall('.//{%(w)s}r/{%(w)s}fldChar[@{%(w)s}fldCharType="begin"]/..' % NAMESPACES)
         )
         while elements_of_type_begin:
             merge_field_obj, _ = self._pull_next_merge_field(elements_of_type_begin)
@@ -1127,9 +1079,7 @@ class MailMerge(object):
                 or self.auto_update_fields_on_open == "always"
             )
             if add_update_fields_setting:
-                update_fields_elem = settings_root.find(
-                    "{%(w)s}updateFields" % NAMESPACES
-                )
+                update_fields_elem = settings_root.find("{%(w)s}updateFields" % NAMESPACES)
                 if not update_fields_elem:
                     update_fields_elem = etree.SubElement(
                         settings_root, "{%(w)s}updateFields" % NAMESPACES
@@ -1175,9 +1125,7 @@ class MailMerge(object):
                     output.writestr(zi.filename, self.zip.read(zi))
 
             for filename, _part_content_type, part in self.new_parts:
-                xml = etree.tostring(
-                    part.getroot(), encoding="UTF-8", xml_declaration=True
-                )
+                xml = etree.tostring(part.getroot(), encoding="UTF-8", xml_declaration=True)
                 output.writestr(filename, xml)
 
     def get_merge_fields(self):
@@ -1217,9 +1165,7 @@ class MailMerge(object):
         rel_docs = []
         for part_info in self.get_parts(["header_footer"]):
             relations = self.get_relations(part_info["zi"])
-            merge_header_footer_doc = MergeHeaderFooterDocument(
-                part_info, relations, separator
-            )
+            merge_header_footer_doc = MergeHeaderFooterDocument(part_info, relations, separator)
             rel_docs.append(merge_header_footer_doc)
             self.merge_data.unique_id_manager.register_id(
                 merge_header_footer_doc.id_type, int(merge_header_footer_doc.part_id)
@@ -1234,18 +1180,14 @@ class MailMerge(object):
 
             # the mailmerge is done with the help of the MergeDocument class
             # that handles the document duplication
-            with MergeDocument(
-                self.merge_data, root, relations, separator
-            ) as merge_doc:
+            with MergeDocument(self.merge_data, root, relations, separator) as merge_doc:
                 row = self.merge_data.start_merge(replacements)
                 while row is not None:
                     merge_doc.prepare(self.merge_data, first=self.merge_data.is_first())
 
                     finish_rels = []
                     for rel_doc in rel_docs:
-                        rel_doc.prepare(
-                            self.merge_data, first=self.merge_data.is_first()
-                        )
+                        rel_doc.prepare(self.merge_data, first=self.merge_data.is_first())
                         rel_doc.merge(self.merge_data, row)
                         finish_rels.extend(rel_doc.finish(self.merge_data))
 
