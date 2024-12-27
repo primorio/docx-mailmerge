@@ -287,9 +287,17 @@ class MergeField(object):
     def insert_into_tree(self):
         """inserts a MergeField element in the original tree at the right position"""
         # Make sure ALL elements from the original tree are removed except for the first useful, that we will replace
+        parents_to_remove = []
+        current_parent = self.parent
         for subelem in self._all_elements[1:]:
-            self.parent.remove(subelem)
+            parent = subelem.getparent()
+            parent.remove(subelem)
+            if parent != current_parent:
+                parents_to_remove.append(parent)
+                current_parent = parent
 
+        for parent in parents_to_remove:
+            parent.getparent().remove(parent)
         replacement_element = etree.Element("MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name)
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element

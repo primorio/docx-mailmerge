@@ -54,23 +54,31 @@ class MergeData(object):
             return str(new_id)
         return None
 
-    def get_merge_fields(self, key):
-        merge_obj = self.get_field_obj(key)
-        if merge_obj.name:
-            yield merge_obj.name
+    # def get_merge_fields(self, key):
+    #     merge_obj = self.get_field_obj(key)
+    #     if merge_obj.name:
+    #         yield merge_obj.name
 
     def get_instr_text(self, elements, recursive=False):
-        return "".join(
-            [
-                text
-                for elem in elements
-                for text in elem.xpath("w:instrText/text()", namespaces=NAMESPACES)
-                + [
-                    "{{{}}}".format(obj_name) if not recursive else self.get_field_obj(obj_name).instr
-                    for obj_name in elem.xpath("@merge_key")
-                ]
-            ]
-        )
+        texts = []
+        current_parent = None
+        for elem in elements:
+            parent = elem.getparent()
+            if current_parent is None:
+                current_parent = parent
+            elif current_parent != parent:
+                current_parent = parent
+                texts.append("\n")
+            for text in elem.xpath("w:instrText/text()", namespaces=NAMESPACES):
+                texts.append(text)
+
+            for obj_name in elem.xpath("@merge_key"):
+                if recursive:
+                    texts.append(self.get_field_obj(obj_name).instr)
+                else:
+                    texts.append("{{{}}}".format(obj_name))
+
+        return "".join(texts)
 
     @classmethod
     def _get_instr_tokens(cls, instr):
