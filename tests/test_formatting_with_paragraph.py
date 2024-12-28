@@ -24,7 +24,6 @@ class BeforeAfterWithParTest(EtreeMixin, unittest.TestCase):
         expected = [v for value in values for v in ["before", f"par{value} after ", "par"]]
         self.assertListEqual(fields, expected)
 
-    @unittest.expectedFailure
     def test_paragraph_and_nested_field(self):
         values = ["one", "two", "three"]
         document, root_elem = self.merge_templates(

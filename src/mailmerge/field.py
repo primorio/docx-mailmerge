@@ -86,10 +86,13 @@ class MergeField(object):
         # the list of elements to add when merging
         self._all_elements = [] if all_elements is None else all_elements
         self._instr_elements = [] if instr_elements is None else instr_elements
+        self._nested_elements = [elem for elem in self._instr_elements if elem.tag == "MergeField"]
         self._show_elements = [] if show_elements is None else show_elements
+        self._nested_values = {}
         self.instr = instr
         instr_tokens = [] if instr_tokens is None else instr_tokens
         self.instr_tokens = instr_tokens
+        self.current_instr_tokens = self.instr_tokens
         self.filled_elements = []
         self.filled_value = None
         self.name = name
@@ -101,7 +104,7 @@ class MergeField(object):
         self.filled_elements = []
 
     def _format(self, value):
-        options = self.instr_tokens[2:]
+        options = self.current_instr_tokens[2:]
         while options:
             flag = options[0][0:2]
             if not flag:
@@ -211,8 +214,21 @@ class MergeField(object):
         # warnings.warn("Date formatting not yet implemented <{}>".format(option))
         return value
 
+    def _fill_nested_elements(self, merge_data, row):
+        nested_values = {}
+        for nested_elem in self._nested_elements:
+            key = nested_elem.attrib["merge_key"]
+            nested_obj = merge_data.get_field_obj(key)
+            nested_obj.fill_data(merge_data, row)
+            nested_values[key] = merge_data.get_instr_text(nested_obj.get_elements_to_replace())
+
+        self.current_instr_tokens = [instr_token.format(**nested_values) for instr_token in self.instr_tokens]
+
     def fill_data(self, merge_data, row):
         """fills the filled_elements with all the elements containing the output text"""
+        if self._nested_elements:
+            self._fill_nested_elements(merge_data, row)
+
         self.filled_elements = []
         value = row.get(self.name, "UNKNOWN({})".format(self.instr))
         try:
@@ -272,7 +288,7 @@ class MergeField(object):
         return all_elements
 
     def _make_br(self):
-        return etree.Element("{%(w)s}br" % NAMESPACES, attrib=None, nsmap=None)
+        return etree.Element("{%(w)s}cr" % NAMESPACES, attrib=None, nsmap=None)
 
     def _make_text(self, text):
         if self.nested:

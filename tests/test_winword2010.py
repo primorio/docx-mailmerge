@@ -3,8 +3,8 @@ import unittest
 from os import path
 
 from lxml import etree
-
 from mailmerge import NAMESPACES, MailMerge
+
 from tests.utils import EtreeMixin, get_document_body_part
 
 
@@ -87,7 +87,7 @@ class Windword2010Test(EtreeMixin, unittest.TestCase):
             '<w:lang w:val="nl-NL"/>'
             "</w:rPr>"
             "<w:t>Helperpark 278d</w:t>"
-            "<w:br/>"
+            "<w:cr/>"
             "<w:t>P.O. Box</w:t>"
             "</w:r>"
             "</w:p>"
