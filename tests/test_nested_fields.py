@@ -2,6 +2,7 @@ import unittest
 from os import path
 
 from mailmerge import NAMESPACES, MailMerge
+
 from tests.utils import EtreeMixin, get_document_body_part
 
 UPDATE_FIELDS_TRUE_XPATH = './w:updateFields[@w:val="true"]'
@@ -17,25 +18,38 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         """
         Fields are disjoint, no interference between the two complex fields
         """
-        with MailMerge(path.join(path.dirname(__file__), "test_nested_if_outside.docx")) as document:
-            self.assertEqual(document.get_merge_fields(), set(["fieldname"]))
+        with MailMerge(
+            path.join(path.dirname(__file__), "test_nested_if_outside.docx"), enable_experimental=True
+        ) as document:
+            # self.assertEqual(document.get_merge_fields(), set(["fieldname"]))
+            self.assertEqual(document.get_merge_fields(), set(["", "fieldname"]))
 
             document.merge(fieldname="one")
 
             # self.assert_equal_tree_debug(get_document_body_part(document).getroot(), get_document_body_part(document).getroot()[0])
             self.assertEqual(
                 get_document_body_part(document).getroot().xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
-                ["begin", "separate", "end"],
+                # ["begin", "separate", "end"],
+                [],
             )
 
+            # self.assertEqual(
+            #     get_document_body_part(document)
+            #     .getroot()
+            #     .xpath(
+            #         './/w:fldChar[@w:fldCharType="end"]/../following-sibling::w:r/w:t/text()',
+            #         namespaces=NAMESPACES,
+            #     ),
+            #     ["one"],
+            # )
             self.assertEqual(
                 get_document_body_part(document)
                 .getroot()
                 .xpath(
-                    './/w:fldChar[@w:fldCharType="end"]/../following-sibling::w:r/w:t/text()',
+                    ".//w:r/w:t/text()",
                     namespaces=NAMESPACES,
                 ),
-                ["one"],
+                ["true", "one"],
             )
 
     def test_outside_auto_update_fields(self):
@@ -46,7 +60,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         document, root_elem = self.merge(
             "test_nested_if_outside.docx",
             values,
-            mm_kwargs={},
+            mm_kwargs={"enable_experimental": True},
             # output="tests/output/test_output_nested_if_outside.docx"
         )
         self.assertListEqual(
@@ -57,7 +71,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         document, root_elem = self.merge(
             "test_nested_if_outside.docx",
             values,
-            mm_kwargs=dict(auto_update_fields_on_open="auto"),
+            mm_kwargs=dict(auto_update_fields_on_open="auto", enable_experimental=True),
             # output="tests/output/test_output_nested_if_outside.docx"
         )
         self.assertListEqual(
@@ -68,7 +82,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         document, root_elem = self.merge(
             "test_nested_if_outside.docx",
             values,
-            mm_kwargs=dict(auto_update_fields_on_open="always"),
+            mm_kwargs=dict(auto_update_fields_on_open="always", enable_experimental=True),
             # output="tests/output/test_output_nested_if_outside.docx"
         )
         self.assertListEqual(
@@ -97,8 +111,10 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             "- one -"
         end
         """
-        with MailMerge(path.join(path.dirname(__file__), "test_nested_if_inside.docx")) as document:
-            self.assertEqual(document.get_merge_fields(), set(["fieldname"]))
+        with MailMerge(
+            path.join(path.dirname(__file__), "test_nested_if_inside.docx"), enable_experimental=True
+        ) as document:
+            self.assertEqual(document.get_merge_fields(), set([""]))
 
             document.merge(fieldname="five")
 
@@ -106,17 +122,18 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
             # self.assert_equal_tree_debug(get_document_body_part(document).getroot(), get_document_body_part(document).getroot()[0])
             self.assertEqual(
                 get_document_body_part(document).getroot().xpath(".//w:fldChar/@w:fldCharType", namespaces=NAMESPACES),
-                ["begin", "begin", "separate", "end", "separate", "end"],
+                [],
+                # ["begin", "begin", "separate", "end", "separate", "end"],
             )
 
             self.assertEqual(
                 get_document_body_part(document)
                 .getroot()
                 .xpath(
-                    './/w:fldChar[@w:fldCharType="begin"][1]/../following-sibling::w:r/w:t/text()',
+                    ".//w:r/w:t/text()",
                     namespaces=NAMESPACES,
                 ),
-                ["more: "],
+                ["more: five"],
             )
 
             self.assertEqual(
@@ -128,7 +145,8 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
                         namespaces=NAMESPACES,
                     )
                 ),
-                """ IF five <> "one" " IF five = "two" "two" "more: five" \\* MERGEFORMAT more: five" "- one -" \\* MERGEFORMAT five""",
+                "",
+                # """ IF five <> "one" " IF five = "two" "two" "more: five" \\* MERGEFORMAT more: five" "- one -" \\* MERGEFORMAT five""",
             )
 
     def test_inside_auto_update_fields(self):
@@ -150,7 +168,7 @@ class NestedFieldsTest(EtreeMixin, unittest.TestCase):
         document, root_elem = self.merge(
             "test_nested_if_inside.docx",
             values,
-            mm_kwargs=dict(auto_update_fields_on_open="auto"),
+            mm_kwargs=dict(auto_update_fields_on_open="auto", enable_experimental=True),
             # output="tests/output/test_output_nested_if_inside.docx"
         )
         self.assertListEqual(

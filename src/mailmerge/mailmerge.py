@@ -19,6 +19,7 @@ class MailMergeSettings:
     remove_empty_tables: bool
     auto_update_fields_on_open: str
     keep_fields: str
+    enable_experimental: bool
 
 
 class MailMergeDocx:
@@ -119,12 +120,15 @@ class MailMerge(object):
         remove_empty_tables=False,
         auto_update_fields_on_open="no",
         keep_fields="none",
+        enable_experimental=False,
     ):
         """
         auto_update_fields_on_open : no, auto, always - auto = only when needed
         keep_fields : none - merge all fields even if no data, some - keep fields with no data, all - keep all fields
         """
-        self.settings = MailMergeSettings(remove_empty_tables, auto_update_fields_on_open, keep_fields)
+        self.settings = MailMergeSettings(
+            remove_empty_tables, auto_update_fields_on_open, keep_fields, enable_experimental=enable_experimental
+        )
         self.docx = MailMergeDocx(file)
         self.merge_data = MergeData(settings=self.settings)
         self.new_parts = []  # list of [(filename, part)]

@@ -47,7 +47,7 @@ class SkipRecord(Exception):
     pass
 
 
-class MergeField(object):
+class BaseMergeField(object):
     """
     Base MergeField class
 
@@ -95,9 +95,10 @@ class MergeField(object):
         self.current_instr_tokens = self.instr_tokens
         self.filled_elements = []
         self.filled_value = None
-        self.name = name
-        if not name and instr_tokens[1:]:
-            self.name = instr_tokens[1]
+        self.name = self._get_field_name(name)
+
+    def _get_field_name(self, name):
+        return name
 
     def reset(self):
         """resets the value"""
@@ -247,7 +248,10 @@ class MergeField(object):
             else:
                 return
 
-        elem = deepcopy(self._instr_elements[0])
+        self.fill_value(self._instr_elements[0], value)
+
+    def fill_value(self, base_elem, value):
+        elem = deepcopy(base_elem)
         for child in elem.xpath("w:instrText", namespaces=NAMESPACES):
             elem.remove(child)
         for child in elem.xpath("w:t", namespaces=NAMESPACES):
@@ -317,6 +321,13 @@ class MergeField(object):
         replacement_element = etree.Element("MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name)
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element
+
+
+class MergeField(BaseMergeField):
+    def _get_field_name(self, name):
+        if not name and self.instr_tokens[1:]:
+            return self.instr_tokens[1]
+        return name
 
 
 class SimpleMergeField(MergeField):

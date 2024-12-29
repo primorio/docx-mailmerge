@@ -2,6 +2,7 @@ import shlex
 import warnings
 from copy import deepcopy
 
+from .conditional_field import IfField, NextIfField, SkipIfField
 from .constants import NAMESPACES, TAGS_WITH_ID
 from .field import MergeField, NextField, NextRecord
 from .unique_man import UniqueIdsManager
@@ -10,8 +11,9 @@ from .unique_man import UniqueIdsManager
 class MergeData(object):
     """prepare the MergeField objects and the data"""
 
-    SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT"}
-    FIELD_CLASSES = {"NEXT": NextField}
+    SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT", "NEXTIF", "SKIPIF"}
+    EXPERIMENTAL_FIELDS = {"IF"}
+    FIELD_CLASSES = {"NEXT": NextField, "IF": IfField, "NEXTIF": NextIfField, "SKIPIF": SkipIfField}
 
     def __init__(self, settings):
         self._merge_field_map = {}  # merge_field.key: MergeField()
@@ -22,6 +24,7 @@ class MergeData(object):
         self.replace_fields_with_missing_data = False
         self._rows = None
         self._current_index = None
+        self.experimental_fields = set() if not settings.enable_experimental else self.EXPERIMENTAL_FIELDS
 
     def start_merge(self, replacements):
         assert self._rows is None, "merge already started"
@@ -114,7 +117,7 @@ class MergeData(object):
 
         instr = instr or self.get_instr_text(instr_elements)
         field_type, rest = self._get_field_type(instr)
-        if field_type not in self.SUPPORTED_FIELDS:
+        if field_type not in self.SUPPORTED_FIELDS and field_type not in self.experimental_fields:
             # ignore the field
             # print("ignore field", instr)
             return None
