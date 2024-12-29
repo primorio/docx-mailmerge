@@ -127,7 +127,7 @@ set.
 The condition can use nested fields. Spaces are *MANDATORY* before and after 
 the operator (<, <>, >, <=, >=, =). The values are better enclosed in double
 quotes. For <> and = operators, the Microsoft-style regular expressions are
-supported (?, *).
+supported (?, \*).
 
 Write document to file. This should be a new file, as ``ZipFile`` cannot modify
 existing zip files.
