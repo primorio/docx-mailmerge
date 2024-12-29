@@ -29,7 +29,8 @@ Open the file.
     with MailMerge('input.docx',
             remove_empty_tables=False,
             auto_update_fields_on_open="no",
-            keep_fields="none") as document:
+            keep_fields="none",
+            enable_experimnetal=False) as document:
         ...
 
 
@@ -120,6 +121,13 @@ setting regardless if needed or not and the value *auto* will only set it
 when necessary (when nested fields exist). The default value *no* will not
 activate this setting.
 
+The {NEXTIF} and {SKIPIF} fields are supported (0.9.0).
+The {IF} fields are supported (0.9.0) only if the enable_experimnetal=True is
+set.
+The condition can use nested fields. Spaces are *MANDATORY* before and after 
+the operator (<, <>, >, <=, >=, =). The values are better enclosed in double
+quotes. For <> and = operators, the Microsoft-style regular expressions are
+supported (?, *).
 
 Write document to file. This should be a new file, as ``ZipFile`` cannot modify
 existing zip files.
@@ -175,7 +183,7 @@ See the documentation of `docx-mergefields`_ for examples.
 Todo / Wish List
 ================
 
-* Implement SKIPIF and NEXTIF fields
+* Better support for the IF fields and conditions
 
 Contributing
 ============
