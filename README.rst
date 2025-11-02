@@ -122,8 +122,9 @@ when necessary (when nested fields exist). The default value *no* will not
 activate this setting.
 
 The {NEXTIF} and {SKIPIF} fields are supported (0.9.0).
-The {IF} fields are supported (0.9.0) only if the ``enable_experimental=True`` is
-set.
+The {IF} fields are supported (since version 0.9.0) in experimental mode only
+(``enable_experimental=True``, see ``MailMerge`` class).
+
 The condition can use nested fields. Spaces are *MANDATORY* before and after 
 the operator (<, <>, >, <=, >=, =). The values are better enclosed in double
 quotes. For <> and = operators, the Microsoft-style regular expressions are
