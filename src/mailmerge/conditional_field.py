@@ -17,10 +17,12 @@ def my_eq(op1, op2):
 
     # convert regexp
     op2 = re.escape(op2).replace("\\*", ".*").replace("\\?", ".")
-    return re.match(op2, op1, re.IGNORECASE)
+    # print(f"my_eq '{op1}' '{op2}'", "result", re.match(op2, op1, re.IGNORECASE))
+    return re.fullmatch(op2, op1, re.IGNORECASE)
 
 
 def my_ne(op1, op2):
+    # print(f"check my_ne '{op1}' # '{op2}' ")
     return not my_eq(op1, op2)
 
 
@@ -47,7 +49,9 @@ class ConditionalField(BaseMergeField):
 
     def check_condition(self):
         operator1, operator, operator2 = self.current_instr_tokens[1:4]
-        return self.check_operator(operator1, operator, operator2)
+        result = self.check_operator(operator1, operator, operator2)
+        # print(f"result condition '{operator1}' '{operator}' '{operator2}' = {result}")
+        return result
 
     def check_operator(self, operator1, operator, operator2):
         # TODO keep double quotes in the operators
@@ -77,8 +81,10 @@ class SkipIfField(ConditionalField):
 class IfField(ConditionalField):
     def return_true(self):
         value_true = self.current_instr_tokens[4] if self.current_instr_tokens[4:] else ""
+        # print("value_true", value_true)
         self.fill_value(self._instr_elements[0], value_true)
 
     def return_false(self):
         value_false = self.current_instr_tokens[5] if self.current_instr_tokens[5:] else ""
+        # print("value_false", value_false)
         self.fill_value(self._instr_elements[0], value_false)
