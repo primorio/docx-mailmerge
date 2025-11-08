@@ -34,4 +34,4 @@ class MailMergeOptions:
     keep_fields: OptionKeepFields = OptionKeepFields.NONE
     enable_experimental: bool = False
     merge_if_fields: bool = False
-    table_rows_replace_mode: bool = True
+    table_rows_replace_mode: bool = False
