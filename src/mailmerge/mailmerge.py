@@ -14,13 +14,12 @@ from .part import MergeDocument, MergeHeaderFooterDocument, Part
 from .rels import RelationsDocument
 
 
-# TODO rename MailMergeSettiongs to MailMergeOptions to remove confusion with the DOCX settings
 @dataclass
-class MailMergeSettings:
-    remove_empty_tables: bool
-    auto_update_fields_on_open: str
-    keep_fields: str
-    enable_experimental: bool
+class MailMergeOptions:
+    remove_empty_tables: bool = False
+    auto_update_fields_on_open: str = "no"
+    keep_fields: str = "none"
+    enable_experimental: bool = False
 
 
 class MailMergeDocx:
@@ -128,11 +127,12 @@ class MailMerge(object):
         auto_update_fields_on_open : no, auto, always - auto = only when needed
         keep_fields : none - merge all fields even if no data, some - keep fields with no data, all - keep all fields
         """
-        self.settings = MailMergeSettings(
+        self.options = MailMergeOptions(
             remove_empty_tables, auto_update_fields_on_open, keep_fields, enable_experimental=enable_experimental
         )
+        self.settings = self.options  # TODO deprecate it
         self.docx = MailMergeDocx(file)
-        self.merge_data = MergeData(settings=self.settings)
+        self.merge_data = MergeData(options=self.options)
         self.new_parts = []  # list of [(filename, part)]
         self._has_unmerged_fields = False
 
@@ -147,16 +147,16 @@ class MailMerge(object):
             raise
 
     def __getattr__(self, name):
-        return getattr(self.settings, name)
+        return getattr(self.options, name)
 
     def __setattr__(self, name, value):
-        if name in MailMergeSettings.__annotations__:
+        if name in MailMergeOptions.__annotations__:
             warnings.warn(
-                "setting configuration values has been deprecated. Use .settings.{} = <value>".format(name),
+                "setting configuration values has been deprecated. Use .options.{} = <value>".format(name),
                 category=DeprecationWarning,
                 stacklevel=2,
             )
-            setattr(self.settings, name, value)
+            setattr(self.options, name, value)
             return
         super().__setattr__(name, value)
 
