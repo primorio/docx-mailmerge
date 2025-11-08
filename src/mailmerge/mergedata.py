@@ -203,8 +203,14 @@ class MergeData(object):
         """replace the rows of a table with the values from the rows list"""
         for table, idx, template in self.__find_row_anchor(body, anchor):
             if len(rows) > 0:
-                del table[idx]
+                if not self.options.table_rows_replace_mode:
+                    del table[idx]
                 for i, row_data in enumerate(rows):
+                    if self.options.table_rows_replace_mode:
+                        try:
+                            del table[idx + i]
+                        except IndexError:
+                            raise IndexError("Table row {} does not fit into table at index: {}".format(row_data, i))
                     row = deepcopy(template)
                     self.replace(row, row_data)
                     table.insert(idx + i, row)

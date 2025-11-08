@@ -7,8 +7,7 @@ docx Mail Merge
     :target: https://pypi.python.org/pypi/docx-mailmerge2
 
 Performs a Mail Merge on Office Open XML (docx) files. Can be used on any
-system without having to install Microsoft Office Word. Supports Python 2.7,
-3.3 and up.
+system without having to install Microsoft Office Word. Supports Python 3.7 and up.
 
 Installation
 ============
@@ -68,6 +67,15 @@ in constructor.
                         [{'col1': 'Row 1, Column 1', 'col2': 'Row 1 Column 1'},
                          {'col1': 'Row 2, Column 1', 'col2': 'Row 2 Column 1'},
                          {'col1': 'Row 3, Column 1', 'col2': 'Row 3 Column 1'}])
+
+The default behaviour is to expand the row containing the fields into several
+rows, one for each element in the data list. However, if you want to have a
+table with a fixed number of rows, you can set the option
+*table_rows_replace_mode=True*. 
+
+In the *replace_mode* the behaviour is to replace the table row containing the
+fields as well as the next rows with the data. If the table doesn't have enough
+rows to contain all the data, an IndexError exception is thrown.
 
 Starting in version 0.2.0 you can also combine these two separate calls into a
 single call to `merge`.
