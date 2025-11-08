@@ -213,10 +213,18 @@ class MergeData(object):
                     parent.remove(table)
 
     def __find_row_anchor(self, body, field):
-        for table in body.findall(".//{%(w)s}tbl" % NAMESPACES):
-            for idx, row in enumerate(table):
-                if row.find('.//MergeField[@name="%s"]' % field) is not None:
-                    yield table, idx, row
+        for field in body.findall('.//MergeField[@name="%s"]' % field):
+            current_elem = field.getparent()
+            while current_elem is not None:
+                if current_elem.tag == "{%(w)s}tbl" % NAMESPACES:
+                    yield self.__find_row(current_elem, field)
+                    break
+                current_elem = current_elem.getparent()
+
+    def __find_row(self, table, field_element):
+        for idx, row in enumerate(table):
+            if field_element in row.iter():
+                return table, idx, row
 
     def get_field_object(self, field_element, row):
         """ " fills the corresponding MergeField python object with data from row"""

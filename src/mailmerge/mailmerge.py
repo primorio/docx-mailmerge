@@ -14,6 +14,7 @@ from .part import MergeDocument, MergeHeaderFooterDocument, Part
 from .rels import RelationsDocument
 
 
+# TODO rename MailMergeSettiongs to MailMergeOptions to remove confusion with the DOCX settings
 @dataclass
 class MailMergeSettings:
     remove_empty_tables: bool
@@ -114,6 +115,7 @@ class MailMerge(object):
 
     """
 
+    # add options parameter and deprecate the individual parameters set to the main MailMerge
     def __init__(
         self,
         file,
