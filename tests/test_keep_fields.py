@@ -86,3 +86,29 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
         self.assertListEqual(root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES), ["one", "", "three_simple", ""])
         self.assertListEqual(root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), [])
         self.assertListEqual(root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), [])
+
+    def test_keep_fields_all_multiple(self):
+        """tests if all fields are merged"""
+        keep_fields = OptionKeepFields.ALL
+        document, root_elem = self.merge_templates(
+            TEST_DOCX,
+            [VALUES, VALUES],
+            mm_kwargs={"keep_fields": keep_fields},
+            output=TEST_DOCX_OUT % keep_fields,
+        )
+
+        self.assertListEqual(
+            document.get_settings().getroot().xpath(MERGE_FIELDS_TRUE_XPATH, namespaces=NAMESPACES),
+            [],
+        )
+        self.assertListEqual(
+            root_elem.xpath(TEXTS_XPATH, namespaces=NAMESPACES),
+            ["one", "«second»", "three_simple", "«four_simple»", "one", "«second»", "three_simple", "«four_simple»"],
+        )
+        self.assertListEqual(
+            root_elem.xpath(SEPARATE_TEXT_FIELDS_XPATH, namespaces=NAMESPACES), ["one", "«second»", "one", "«second»"]
+        )
+        self.assertListEqual(
+            root_elem.xpath(SIMPLE_FIELDS_TEXT_FIELDS_XPATH, namespaces=NAMESPACES),
+            ["three_simple", "«four_simple»", "three_simple", "«four_simple»"],
+        )

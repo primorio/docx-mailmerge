@@ -275,19 +275,19 @@ class BaseMergeField(object):
         """
         if keep_field:
             if not self.filled_elements:  # we keep the original value
-                return self._all_elements
+                return [deepcopy(elem) for elem in self._all_elements]
             return self.get_field_with_filled_elements()
         return self.filled_elements
 
     def get_field_with_filled_elements(self):
         # for complex fields
-        all_elements = self._all_elements[:]  # copy of all elements
+        all_elements = [deepcopy(elem) for elem in self._all_elements]  # copy of all elements
         if not self._show_elements:
             separate_element = deepcopy(self._all_elements[-1])
             separate_element.find("w:fldChar", namespaces=NAMESPACES).set("{%(w)s}fldCharType" % NAMESPACES, "separate")
             all_elements[-1:-1] = [separate_element] + self.filled_elements
         else:
-            index = all_elements.index(self._show_elements[0])
+            index = self._all_elements.index(self._show_elements[0])
             all_elements[index : index + len(self._show_elements)] = self.filled_elements
         return all_elements
 
