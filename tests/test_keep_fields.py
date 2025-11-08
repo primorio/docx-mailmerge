@@ -1,6 +1,6 @@
 import unittest
 
-from mailmerge import NAMESPACES
+from mailmerge import NAMESPACES, OptionKeepFields
 from tests.utils import TEXTS_XPATH, EtreeMixin
 
 MERGE_FIELDS_TRUE_XPATH = "./w:mailMerge"
@@ -23,7 +23,7 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
 
     def test_keep_fields_all(self):
         """tests if all fields are merged"""
-        keep_fields = "all"
+        keep_fields = OptionKeepFields.ALL
         document, root_elem = self.merge(
             TEST_DOCX,
             VALUES,
@@ -47,7 +47,7 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
 
     def test_keep_fields_some(self):
         """tests if all fields are merged"""
-        keep_fields = "some"
+        keep_fields = OptionKeepFields.SOME
         document, root_elem = self.merge(
             TEST_DOCX,
             VALUES,
@@ -71,7 +71,7 @@ class MergeParamsTest(EtreeMixin, unittest.TestCase):
 
     def test_keep_fields_none(self):
         """tests if all fields are merged"""
-        keep_fields = "none"
+        keep_fields = OptionKeepFields.NONE
         document, root_elem = self.merge(
             TEST_DOCX,
             VALUES,

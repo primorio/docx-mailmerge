@@ -4,7 +4,8 @@ import zipfile
 from os import path
 
 from lxml import etree
-from mailmerge import NAMESPACES, MailMerge
+
+from mailmerge import NAMESPACES, MailMerge, MailMergeOptions
 from mailmerge.mailmerge import CONTENT_TYPES_PARTS
 
 TEXTS_XPATH = "//w:t/text()"
@@ -55,7 +56,9 @@ class EtreeMixin(object):
         mt_kwargs={},
         output=None,
     ):
-        with MailMerge(path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs) as document:
+        with MailMerge(
+            path.join(path.dirname(__file__), filename), *mm_args, options=MailMergeOptions(**mm_kwargs)
+        ) as document:
             document.merge_templates(replacements, separator, *mt_args, **mt_kwargs)
 
             if write_file:
@@ -69,7 +72,9 @@ class EtreeMixin(object):
             return document, get_document_body_part(document).getroot()
 
     def merge(self, filename, replacements, write_file=True, mm_args=[], mm_kwargs={}, output=None):
-        with MailMerge(path.join(path.dirname(__file__), filename), *mm_args, **mm_kwargs) as document:
+        with MailMerge(
+            path.join(path.dirname(__file__), filename), *mm_args, options=MailMergeOptions(**mm_kwargs)
+        ) as document:
             document.merge(**replacements)
 
             if write_file:

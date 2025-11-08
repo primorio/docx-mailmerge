@@ -1,6 +1,5 @@
 import os
 import warnings
-from dataclasses import dataclass
 
 # import locale
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -10,16 +9,9 @@ from lxml import etree
 from .constants import CONTENT_TYPES_PARTS, NAMESPACES
 from .field import SkipRecord
 from .mergedata import MergeData
+from .mergeoptions import MailMergeOptions, OptionAutoUpdateFields, OptionKeepFields
 from .part import MergeDocument, MergeHeaderFooterDocument, Part
 from .rels import RelationsDocument
-
-
-@dataclass
-class MailMergeOptions:
-    remove_empty_tables: bool = False
-    auto_update_fields_on_open: str = "no"
-    keep_fields: str = "none"
-    enable_experimental: bool = False
 
 
 class MailMergeDocx:
@@ -95,7 +87,7 @@ class MailMergeDocx:
                 self.zip_is_closed = True
 
 
-class MailMerge(object):
+class MailMerge:
     """
     MailMerge class to write an output docx document by merging data rows to a template
 
@@ -118,19 +110,19 @@ class MailMerge(object):
     def __init__(
         self,
         file,
-        remove_empty_tables=False,
-        auto_update_fields_on_open="no",
-        keep_fields="none",
-        enable_experimental=False,
+        options: MailMergeOptions | None = None,
+        remove_empty_tables=None,
+        auto_update_fields_on_open=None,
+        keep_fields=None,
+        enable_experimental=None,
     ):
         """
         auto_update_fields_on_open : no, auto, always - auto = only when needed
         keep_fields : none - merge all fields even if no data, some - keep fields with no data, all - keep all fields
         """
-        self.options = MailMergeOptions(
-            remove_empty_tables, auto_update_fields_on_open, keep_fields, enable_experimental=enable_experimental
-        )
-        self.settings = self.options  # TODO deprecate it
+        self.options = options or MailMergeOptions()
+        # assert self.options.keep_fields == "none", self.options.keep_fields
+        self._set_deprecated_options(remove_empty_tables, auto_update_fields_on_open, keep_fields, enable_experimental)
         self.docx = MailMergeDocx(file)
         self.merge_data = MergeData(options=self.options)
         self.new_parts = []  # list of [(filename, part)]
@@ -146,7 +138,49 @@ class MailMerge(object):
             self.docx.close()
             raise
 
+    def _set_deprecated_options(
+        self, remove_empty_tables, auto_update_fields_on_open, keep_fields, enable_experimental
+    ):
+        if remove_empty_tables is not None:
+            warnings.warn(
+                "Passing specific options directly through constructor has been deprecated. Use options=MailMergeOptions(remove_empty_tables={remove_empty_tables}) instead or set the option later",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self.options.remove_empty_tables = remove_empty_tables
+
+        if auto_update_fields_on_open is not None:
+            warnings.warn(
+                "Passing specific options directly through constructor has been deprecated. Use options=MailMergeOptions(auto_update_fields_on_open={auto_update_fields_on_open}) instead or set the option later",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self.options.auto_update_fields_on_open = OptionAutoUpdateFields(auto_update_fields_on_open)
+
+        if keep_fields is not None:
+            warnings.warn(
+                "Passing specific options directly through constructor has been deprecated. Use options=MailMergeOptions(keep_fields={keep_fields}) instead or set the option later",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self.options.keep_fields = OptionKeepFields(keep_fields)
+
+        if enable_experimental is not None:
+            warnings.warn(
+                "Passing specific options directly through constructor has been deprecated. Also the enable_experimental option has been deprecated in favor of merge_if_fields. Use options=MailMergeOptions(merge_if_fields={auto_update_fields_on_open}) instead or set the option later",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self.options.enable_experimental = enable_experimental
+
     def __getattr__(self, name):
+        if name == "settings":
+            warnings.warn(
+                ".settings has been deprecated. Use .options",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.options
         return getattr(self.options, name)
 
     def __setattr__(self, name, value):
@@ -187,9 +221,9 @@ class MailMerge(object):
                     settings_root.remove(mail_merge)
 
             add_update_fields_setting = (
-                self.auto_update_fields_on_open == "auto"
+                self.auto_update_fields_on_open == OptionAutoUpdateFields.AUTO
                 and self.merge_data.has_nested_fields
-                or self.auto_update_fields_on_open == "always"
+                or self.auto_update_fields_on_open == OptionAutoUpdateFields.ALWAYS
             )
             if add_update_fields_setting:
                 update_fields_elem = settings_root.find("{%(w)s}updateFields" % NAMESPACES)
@@ -203,7 +237,7 @@ class MailMerge(object):
         self._has_unmerged_fields = bool(self.get_merge_fields())
 
         if empty_value is not None:
-            if self.keep_fields == "none":
+            if self.keep_fields == OptionKeepFields.NONE:
                 # we use empty values to replace all fields having no data
                 self.merge(**{field: empty_value for field in self.get_merge_fields()})
             else:

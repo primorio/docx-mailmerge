@@ -5,6 +5,7 @@ from copy import deepcopy
 from .conditional_field import IfField, NextIfField, SkipIfField
 from .constants import NAMESPACES, TAGS_WITH_ID
 from .field import MergeField, NextField, NextRecord
+from .mergeoptions import MailMergeOptions, OptionKeepFields
 from .unique_man import UniqueIdsManager
 
 
@@ -12,10 +13,10 @@ class MergeData(object):
     """prepare the MergeField objects and the data"""
 
     SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT", "NEXTIF", "SKIPIF"}
-    EXPERIMENTAL_FIELDS = {"IF"}
+    IF_FIELDS = {"IF"}
     FIELD_CLASSES = {"NEXT": NextField, "IF": IfField, "NEXTIF": NextIfField, "SKIPIF": SkipIfField}
 
-    def __init__(self, options):
+    def __init__(self, options: MailMergeOptions):
         self._merge_field_map = {}  # merge_field.key: MergeField()
         self._merge_field_next_id = 0
         self.unique_id_manager = UniqueIdsManager()
@@ -24,7 +25,9 @@ class MergeData(object):
         self.replace_fields_with_missing_data = False
         self._rows = None
         self._current_index = None
-        self.experimental_fields = set() if not options.enable_experimental else self.EXPERIMENTAL_FIELDS
+        self.supported_fields = set(self.SUPPORTED_FIELDS)
+        if options.enable_experimental or options.merge_if_fields:
+            self.supported_fields.update(self.IF_FIELDS)
 
     def start_merge(self, replacements):
         assert self._rows is None, "merge already started"
@@ -117,7 +120,7 @@ class MergeData(object):
 
         instr = instr or self.get_instr_text(instr_elements)
         field_type, rest = self._get_field_type(instr)
-        if field_type not in self.SUPPORTED_FIELDS and field_type not in self.experimental_fields:
+        if field_type not in self.supported_fields:
             # ignore the field
             # print("ignore field", instr)
             return None
@@ -190,7 +193,7 @@ class MergeData(object):
         """replaces a field element MergeField in the body with the filled_elements"""
         # assert len(filled_field.filled_elements) == 1
         if field_obj:
-            keep_field = force_keep_field or self.options.keep_fields == "all"
+            keep_field = force_keep_field or self.options.keep_fields == OptionKeepFields.ALL
             elements_to_replace = field_obj.get_elements_to_replace(keep_field=keep_field)
             for text_element in reversed(elements_to_replace):
                 field_element.addnext(text_element)
@@ -225,6 +228,7 @@ class MergeData(object):
         for idx, row in enumerate(table):
             if field_element in row.iter():
                 return table, idx, row
+        raise ValueError("Field element {} not found inside table", field_element.tag)
 
     def get_field_object(self, field_element, row):
         """ " fills the corresponding MergeField python object with data from row"""

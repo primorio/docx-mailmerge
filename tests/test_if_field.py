@@ -1,7 +1,6 @@
 import unittest
 
 from mailmerge import NAMESPACES
-
 from tests.utils import EtreeMixin
 
 
@@ -18,7 +17,7 @@ class IfTest(EtreeMixin, unittest.TestCase):
         document, root_elem = self.merge_templates(
             "test_if_with_paragraph.docx",
             [{"fieldname": value} for value in values],
-            mm_kwargs=dict(enable_experimental=True),
+            mm_kwargs=dict(merge_if_fields=True),
             # output="tests/test_output_next_record.docx"
         )
 

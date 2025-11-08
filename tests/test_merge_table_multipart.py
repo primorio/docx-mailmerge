@@ -3,8 +3,8 @@ import unittest
 from os import path
 
 from lxml import etree
-from mailmerge import MailMerge
 
+from mailmerge import MailMerge
 from tests.utils import EtreeMixin, get_document_body_part
 
 

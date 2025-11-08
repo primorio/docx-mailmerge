@@ -26,11 +26,20 @@ Open the file.
 ::
 
     from mailmerge import MailMerge
-    with MailMerge('input.docx',
-            remove_empty_tables=False,
-            auto_update_fields_on_open="no",
-            keep_fields="none",
-            enable_experimental=False) as document:
+    with MailMerge('input.docx') as document:
+        ...
+
+Open the file and setting options
+::
+
+    from mailmerge import MailMerge, MailMergeOptions, OptionAutoUpdateFields, OptionKeepFields
+    mailmerge_options = MailMergeOptions(
+        remove_empty_tables=False,
+        auto_update_fields_on_open=OptionAutoUpdateFields.NO,
+        keep_fields=OptionKeepFields.NONE,
+        merge_if_fields=False,
+        table_rows_replace_mode=False)
+    with MailMerge('input.docx', options=mailmerge_options) as document:
         ...
 
 
@@ -59,7 +68,6 @@ in constructor.
                         [{'col1': 'Row 1, Column 1', 'col2': 'Row 1 Column 1'},
                          {'col1': 'Row 2, Column 1', 'col2': 'Row 2 Column 1'},
                          {'col1': 'Row 3, Column 1', 'col2': 'Row 3 Column 1'}])
-
 
 Starting in version 0.2.0 you can also combine these two separate calls into a
 single call to `merge`.
@@ -116,14 +124,14 @@ updated in Word. This can be done by selecting everything (CTRL-a) and then
 update the fields (F9). There is a way to force the Word to update fields
 automatically when opening the document. docx-mailmerge can set this
 setting when saving the document. You can configure this feature by using
-the *auto_update_fields_on_open* parameter. The value *always* will set the
+the *auto_update_fields_on_open* option. The value *always* will set the
 setting regardless if needed or not and the value *auto* will only set it
 when necessary (when nested fields exist). The default value *no* will not
 activate this setting.
 
 The {NEXTIF} and {SKIPIF} fields are supported (0.9.0).
 The {IF} fields are supported (since version 0.9.0) in experimental mode only
-(``enable_experimental=True``, see ``MailMerge`` class).
+(``merge_if_fields=True``, see ``MailMergeOptions`` class).
 
 The condition can use nested fields. Spaces are *MANDATORY* before and after 
 the operator (<, <>, >, <=, >=, =). The values are better enclosed in double
@@ -142,9 +150,10 @@ If you want to keep the existing MERGEFIELD fields (with their current value)
 you can specify the keep_fields="some" parameter in the constructor.
 ::
 
-    from mailmerge import MailMerge
+    from mailmerge import MailMerge, MailMergeOptions, OptionKeepFields
     with MailMerge('keep_unchanged_fields.docx',
-            keep_fields="some") as document:
+            options=MailMergeOptions(
+                keep_fields=OptionKeepFields.SOME)) as document:
         ...
 
 If you want to only update the value of the MERGEFIELD fields but keep the 
@@ -153,9 +162,10 @@ constructor. This way, you can change the document and update the fields again
 later.
 ::
 
-    from mailmerge import MailMerge
+    from mailmerge import MailMerge, MailMergeOptions, OptionKeepFields
     with MailMerge('keep_all_fields.docx',
-            keep_fields="all") as document:
+            options=MailMergeOptions(
+                keep_fields=OptionKeepFields.ALL)) as document:
         ...
 
 

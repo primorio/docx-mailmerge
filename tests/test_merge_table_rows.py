@@ -1,11 +1,10 @@
 import tempfile
 import unittest
-import warnings
 from os import path
 
 from lxml import etree
-from mailmerge import NAMESPACES, MailMerge
 
+from mailmerge import NAMESPACES, MailMerge
 from tests.utils import EtreeMixin, get_document_body_part
 
 
@@ -76,9 +75,7 @@ class MergeTableRowsTest(EtreeMixin, unittest.TestCase):
         """
         When flag is set and there is no data in a table, table needs to be removed
         """
-        with warnings.catch_warnings(record=True) as warning_list:
-            self.document.remove_empty_tables = True
-            self.assertTrue(any(item.category is DeprecationWarning for item in warning_list))
+        self.document.options.remove_empty_tables = True
         self.document.merge(
             student_name="Bouke Haarsma",
             study="Industrial Engineering and Management",
