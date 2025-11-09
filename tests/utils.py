@@ -9,6 +9,10 @@ from mailmerge import NAMESPACES, MailMerge, MailMergeOptions
 from mailmerge.mailmerge import CONTENT_TYPES_PARTS
 
 TEXTS_XPATH = "//w:t/text()"
+MERGE_FIELDS_TRUE_XPATH = "./w:mailMerge"
+MERGE_FIELDS_XPATH = "//MergeField"
+SEPARATE_TEXT_FIELDS_XPATH = '//w:fldChar[@w:fldCharType = "separate"]/../following-sibling::w:r/w:t/text()'
+SIMPLE_FIELDS_TEXT_FIELDS_XPATH = "//w:fldSimple/w:r/w:t/text()"
 
 
 class EtreeMixin(object):

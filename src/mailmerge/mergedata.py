@@ -171,23 +171,28 @@ class MergeData(object):
         for anchor, table_rows in all_tables.items():
             self.replace_table_rows(body, anchor, table_rows)
 
-        merge_fields = body.findall(".//MergeField")
-        for field_element in merge_fields:
-            field_obj = None
-            try:
-                field_obj = self.get_field_object(field_element, row)
-                field_obj.reset()
-                if self._has_value_in_row(field_element, row):
-                    field_obj.fill_data(self, row)  # can throw NextRecord
-                    self.replace_field(field_element, field_obj)
-                elif self.replace_fields_with_missing_data:
-                    self.replace_field(field_element, field_obj, force_keep_field=True)
-            except NextRecord:
-                self.replace_field(field_element, field_obj)
-                row = self.next_row()
+        self.replace_in_body(body, row)
 
-    def _has_value_in_row(self, field_element, row):
-        return not (field_element.get("name") and (row is None or field_element.get("name") not in row))
+    def replace_in_body(self, body, row):
+        merge_fields = body.findall(".//MergeField")
+        if merge_fields:
+            for field_element in merge_fields:
+                field_obj = None
+                try:
+                    field_obj = self.get_field_object(field_element, row)
+                    field_obj.reset()
+                    if field_obj.has_value_in_row(self, row):
+                        field_obj.fill_data(self, row)  # can throw NextRecord
+                        self.replace_field(field_element, field_obj)
+                    elif self.replace_fields_with_missing_data:
+                        # field_obj.fill_data(self, row)
+                        self.replace_field(field_element, field_obj, force_keep_field=True)
+                except NextRecord:
+                    self.replace_field(field_element, field_obj)
+                    row = self.next_row()
+
+            if self.replace_fields_with_missing_data:
+                self.replace_in_body(body, row)
 
     def replace_field(self, field_element, field_obj=None, force_keep_field=False):
         """replaces a field element MergeField in the body with the filled_elements"""

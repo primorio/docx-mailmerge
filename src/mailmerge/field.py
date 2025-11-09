@@ -97,6 +97,12 @@ class BaseMergeField(object):
         self.filled_value = None
         self.name = self._get_field_name(name)
 
+    def has_value_in_row(self, merge_data, row):
+        sub_elements_have_values = all(
+            nested_obj.has_value_in_row(merge_data, row) for key, nested_obj in self.iterate_subelements(merge_data)
+        )
+        return sub_elements_have_values and not (self.name and (row is None or self.name not in row))
+
     def _get_field_name(self, name):
         return name
 
@@ -215,11 +221,15 @@ class BaseMergeField(object):
         # warnings.warn("Date formatting not yet implemented <{}>".format(option))
         return value
 
-    def _fill_nested_elements(self, merge_data, row):
-        nested_values = {}
+    def iterate_subelements(self, merge_data):
         for nested_elem in self._nested_elements:
             key = nested_elem.attrib["merge_key"]
             nested_obj = merge_data.get_field_obj(key)
+            yield key, nested_obj
+
+    def _fill_nested_elements(self, merge_data, row):
+        nested_values = {}
+        for key, nested_obj in self.iterate_subelements(merge_data):
             nested_obj.fill_data(merge_data, row)
             nested_values[key] = merge_data.get_instr_text(nested_obj.get_elements_to_replace())
 
@@ -231,7 +241,7 @@ class BaseMergeField(object):
             self._fill_nested_elements(merge_data, row)
 
         self.filled_elements = []
-        value = row.get(self.name, "UNKNOWN({})".format(self.instr))
+        value = row.get(self.name, "«{}»".format(self.name))
         try:
             value = self._format(value)
         except Exception as e:
@@ -275,9 +285,12 @@ class BaseMergeField(object):
         """
         if keep_field:
             if not self.filled_elements:  # we keep the original value
-                return [deepcopy(elem) for elem in self._all_elements]
+                return self.get_field_without_filled_elements()
             return self.get_field_with_filled_elements()
         return self.filled_elements
+
+    def get_field_without_filled_elements(self):
+        return [deepcopy(elem) for elem in self._all_elements]
 
     def get_field_with_filled_elements(self):
         # for complex fields

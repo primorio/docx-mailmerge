@@ -1,11 +1,14 @@
 import unittest
 
 from mailmerge import NAMESPACES, OptionKeepFields
-from tests.utils import TEXTS_XPATH, EtreeMixin
+from tests.utils import (
+    MERGE_FIELDS_TRUE_XPATH,
+    SEPARATE_TEXT_FIELDS_XPATH,
+    SIMPLE_FIELDS_TEXT_FIELDS_XPATH,
+    TEXTS_XPATH,
+    EtreeMixin,
+)
 
-MERGE_FIELDS_TRUE_XPATH = "./w:mailMerge"
-SEPARATE_TEXT_FIELDS_XPATH = '//w:fldChar[@w:fldCharType = "separate"]/../following-sibling::w:r/w:t/text()'
-SIMPLE_FIELDS_TEXT_FIELDS_XPATH = "//w:fldSimple/w:r/w:t/text()"
 VALUES = {"first": "one", "three_simple": "three_simple"}
 TEST_DOCX = "test_keep_fields.docx"
 TEST_DOCX_OUT = "tests/output/test_keep_fields_%s.docx"
