@@ -16,5 +16,14 @@ from .mailmerge import MailMerge as MailMerge
 from .mergeoptions import MailMergeOptions as MailMergeOptions
 from .mergeoptions import OptionAutoUpdateFields as OptionAutoUpdateFields
 from .mergeoptions import OptionKeepFields as OptionKeepFields
+from .richtext import RichTextPayload as RichTextPayload
 
-__all__ = ["__version__", "NAMESPACES", "MailMerge", "MailMergeOptions", "OptionAutoUpdateFields", "OptionKeepFields"]
+__all__ = [
+    "__version__",
+    "NAMESPACES",
+    "MailMerge",
+    "MailMergeOptions",
+    "OptionAutoUpdateFields",
+    "OptionKeepFields",
+    "RichTextPayload",
+]

@@ -14,7 +14,12 @@ class MergeData(object):
 
     SUPPORTED_FIELDS = {"MERGEFIELD", "NEXT", "NEXTIF", "SKIPIF"}
     IF_FIELDS = {"IF"}
-    FIELD_CLASSES = {"NEXT": NextField, "IF": IfField, "NEXTIF": NextIfField, "SKIPIF": SkipIfField}
+    FIELD_CLASSES = {
+        "NEXT": NextField,
+        "IF": IfField,
+        "NEXTIF": NextIfField,
+        "SKIPIF": SkipIfField,
+    }
 
     def __init__(self, options: MailMergeOptions):
         self._merge_field_map = {}  # merge_field.key: MergeField()
@@ -130,7 +135,9 @@ class MergeData(object):
             tokens = list(self._get_instr_tokens(instr))
         except ValueError as e:
             tokens = [field_type] + list(map(lambda part: part.replace('"', ""), rest))
-            warnings.warn("Invalid field description <{}> near: <{}>".format(str(e), instr))
+            warnings.warn(
+                "Invalid field description <{}> near: <{}>".format(str(e), instr)
+            )
 
         # print("make data object", field_class, instr, len(elements), len(kwargs.get('ignore_elements', [])))
         field_obj = field_class(
@@ -166,7 +173,9 @@ class MergeData(object):
 
     def replace(self, body, row):
         """replaces in the body xml tree the MergeField elements with values from the row"""
-        all_tables = {key: value for key, value in row.items() if isinstance(value, list)}
+        all_tables = {
+            key: value for key, value in row.items() if isinstance(value, list)
+        }
 
         for anchor, table_rows in all_tables.items():
             self.replace_table_rows(body, anchor, table_rows)
@@ -186,7 +195,9 @@ class MergeData(object):
                         self.replace_field(field_element, field_obj)
                     elif self.replace_fields_with_missing_data:
                         # field_obj.fill_data(self, row)
-                        self.replace_field(field_element, field_obj, force_keep_field=True)
+                        self.replace_field(
+                            field_element, field_obj, force_keep_field=True
+                        )
                 except NextRecord:
                     self.replace_field(field_element, field_obj)
                     row = self.next_row()
@@ -198,11 +209,54 @@ class MergeData(object):
         """replaces a field element MergeField in the body with the filled_elements"""
         # assert len(filled_field.filled_elements) == 1
         if field_obj:
-            keep_field = force_keep_field or self.options.keep_fields == OptionKeepFields.ALL
-            elements_to_replace = field_obj.get_elements_to_replace(keep_field=keep_field)
-            for text_element in reversed(elements_to_replace):
-                field_element.addnext(text_element)
-        field_element.getparent().remove(field_element)
+            keep_field = (
+                force_keep_field or self.options.keep_fields == OptionKeepFields.ALL
+            )
+            elements_to_replace = field_obj.get_elements_to_replace(
+                keep_field=keep_field
+            )
+            payload = getattr(field_obj, "rich_text_payload", None)
+            if (
+                payload
+                and payload.block_level
+                and not keep_field
+                and self._replace_block_level_field(field_element, elements_to_replace)
+            ):
+                return
+
+            self._replace_inline_field(field_element, elements_to_replace)
+            return
+
+        self._replace_inline_field(field_element, [])
+
+    def _replace_inline_field(self, field_element, replacements):
+        for text_element in reversed(replacements):
+            field_element.addnext(text_element)
+        parent = field_element.getparent()
+        if parent is not None:
+            parent.remove(field_element)
+
+    def _replace_block_level_field(self, field_element, replacements):
+        paragraph = self._find_enclosing_paragraph(field_element)
+        if paragraph is None:
+            return False
+
+        parent = paragraph.getparent()
+        if parent is None:
+            return False
+
+        index = parent.index(paragraph)
+        parent.remove(paragraph)
+        for element in reversed(replacements):
+            parent.insert(index, element)
+        return True
+
+    def _find_enclosing_paragraph(self, element):
+        current = element
+        paragraph_tag = "{%(w)s}p" % NAMESPACES
+        while current is not None and current.tag != paragraph_tag:
+            current = current.getparent()
+        return current
 
     def replace_table_rows(self, body, anchor, rows):
         """replace the rows of a table with the values from the rows list"""
@@ -215,7 +269,11 @@ class MergeData(object):
                         try:
                             del table[idx + i]
                         except IndexError:
-                            raise IndexError("Table row {} does not fit into table at index: {}".format(row_data, i))
+                            raise IndexError(
+                                "Table row {} does not fit into table at index: {}".format(
+                                    row_data, i
+                                )
+                            )
                     row = deepcopy(template)
                     self.replace(row, row_data)
                     table.insert(idx + i, row)

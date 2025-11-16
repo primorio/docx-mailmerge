@@ -220,6 +220,34 @@ loaded from a database in base64 data-uri format, as well as URLs and local imag
 
 See the documentation of `docx-mergefields`_ for examples.
 
+Inserting Rich Text Blocks
+==========================
+
+When you need to inject preformatted WordprocessingML fragments (for example a
+letter body that was generated from HTML) you can bypass the default plain-text
+behaviour by passing a :class:`~mailmerge.RichTextPayload` to ``merge``.  The
+payload holds the lxml elements that should replace the merge field.  By
+default the payload is treated as *block-level* content, which means the
+paragraph that contains the merge field will be replaced by the supplied
+paragraphs/tables.  Use ``block_level=False`` for inline runs.
+
+::
+
+    from lxml import etree
+    from mailmerge import MailMerge, RichTextPayload, NAMESPACES
+
+    def make_paragraph(text):
+        paragraph = etree.Element("{%(w)s}p" % NAMESPACES)
+        run = etree.SubElement(paragraph, "{%(w)s}r" % NAMESPACES)
+        etree.SubElement(run, "{%(w)s}t" % NAMESPACES).text = text
+        return paragraph
+
+    payload = RichTextPayload([make_paragraph("First line"), make_paragraph("Second line")])
+
+    with MailMerge("template.docx") as document:
+        document.merge(main_content=payload)
+        document.write("output.docx")
+
 Todo / Wish List
 ================
 

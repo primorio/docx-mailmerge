@@ -6,9 +6,12 @@ from copy import deepcopy
 from lxml import etree
 
 from .constants import MAKE_TESTS_HAPPY, NAMESPACES
+from .richtext import RichTextPayload
 
 NUMBERFORMAT_RE = re.compile(r"([^0.,'#PN]+)?(P\d+|N\d+|[0.,'#]+%?)([^0.,'#%].*)?")
-DATEFORMAT_RE = "|".join([r"{}+".format(switch) for switch in "yYmMdDhHsS"] + [r"am/pm", r"AM/PM"])
+DATEFORMAT_RE = "|".join(
+    [r"{}+".format(switch) for switch in "yYmMdDhHsS"] + [r"am/pm", r"AM/PM"]
+)
 DATEFORMAT_MAP = {
     "M": "{d.month}",
     "MM": "%m",
@@ -86,7 +89,9 @@ class BaseMergeField(object):
         # the list of elements to add when merging
         self._all_elements = [] if all_elements is None else all_elements
         self._instr_elements = [] if instr_elements is None else instr_elements
-        self._nested_elements = [elem for elem in self._instr_elements if elem.tag == "MergeField"]
+        self._nested_elements = [
+            elem for elem in self._instr_elements if elem.tag == "MergeField"
+        ]
         self._show_elements = [] if show_elements is None else show_elements
         self._nested_values = {}
         self.instr = instr
@@ -96,12 +101,16 @@ class BaseMergeField(object):
         self.filled_elements = []
         self.filled_value = None
         self.name = self._get_field_name(name)
+        self.rich_text_payload = None
 
     def has_value_in_row(self, merge_data, row):
         sub_elements_have_values = all(
-            nested_obj.has_value_in_row(merge_data, row) for key, nested_obj in self.iterate_subelements(merge_data)
+            nested_obj.has_value_in_row(merge_data, row)
+            for key, nested_obj in self.iterate_subelements(merge_data)
         )
-        return sub_elements_have_values and not (self.name and (row is None or self.name not in row))
+        return sub_elements_have_values and not (
+            self.name and (row is None or self.name not in row)
+        )
 
     def _get_field_name(self, name):
         return name
@@ -109,6 +118,7 @@ class BaseMergeField(object):
     def reset(self):
         """resets the value"""
         self.filled_elements = []
+        self.rich_text_payload = None
 
     def _format(self, value):
         options = self.current_instr_tokens[2:]
@@ -176,22 +186,36 @@ class BaseMergeField(object):
         format_number = format_match.group(2)
         format_suffix = format_match.group(3) or ""
         if format_number[0] == "P":
-            return "{{}}{{:.{}%}}{{}}".format(int(format_number[1:])).format(format_prefix, value, format_suffix)
+            return "{{}}{{:.{}%}}{{}}".format(int(format_number[1:])).format(
+                format_prefix, value, format_suffix
+            )
         if format_number[0] == "N":
-            return "{{}}{{:.{}f}}{{}}".format(int(format_number[1:])).format(format_prefix, value, format_suffix)
+            return "{{}}{{:.{}f}}{{}}".format(int(format_number[1:])).format(
+                format_prefix, value, format_suffix
+            )
         if format_number[-1] == "%":
             return "{}{:.0%}{}".format(format_prefix, value, format_suffix)
-        thousand_info = [("_", thousand_char) for thousand_char in "'," if thousand_char in format_number] + [("", "")]
+        thousand_info = [
+            ("_", thousand_char)
+            for thousand_char in "',"
+            if thousand_char in format_number
+        ] + [("", "")]
         thousand_flag, thousand_char = thousand_info[0]
         format_number = format_number.replace(",", "")
         digits, decimals = (format_number.split(".") + [""])[0:2]
         zero_digits = len(digits.replace("#", ""))
         _zero_decimals = len(decimals.replace("#", ""))
         len_decimals_plus_dot = 0 if not decimals else 1 + len(decimals)
-        number_format_text = "{{}}{{:{zero_digits}{thousand_flag}{decimals}f}}{{}}".format(
-            thousand_flag=thousand_flag,
-            zero_digits="0>{}".format(zero_digits + len_decimals_plus_dot) if zero_digits > 1 else "",
-            decimals=".{}".format(len(decimals)),
+        number_format_text = (
+            "{{}}{{:{zero_digits}{thousand_flag}{decimals}f}}{{}}".format(
+                thousand_flag=thousand_flag,
+                zero_digits=(
+                    "0>{}".format(zero_digits + len_decimals_plus_dot)
+                    if zero_digits > 1
+                    else ""
+                ),
+                decimals=".{}".format(len(decimals)),
+            )
         )
         # print(self.name, "<", option, ">", number_format_text)
         try:
@@ -200,7 +224,11 @@ class BaseMergeField(object):
                 result = result.replace(thousand_flag, thousand_char)
             return result
         except Exception as e:
-            raise ValueError("Invalid number format <{}> with error <{}>".format(number_format_text, e))
+            raise ValueError(
+                "Invalid number format <{}> with error <{}>".format(
+                    number_format_text, e
+                )
+            )
 
     def _format_date(self, value, flag, option):
         if value is None:
@@ -231,9 +259,13 @@ class BaseMergeField(object):
         nested_values = {}
         for key, nested_obj in self.iterate_subelements(merge_data):
             nested_obj.fill_data(merge_data, row)
-            nested_values[key] = merge_data.get_instr_text(nested_obj.get_elements_to_replace())
+            nested_values[key] = merge_data.get_instr_text(
+                nested_obj.get_elements_to_replace()
+            )
 
-        self.current_instr_tokens = [instr_token.format(**nested_values) for instr_token in self.instr_tokens]
+        self.current_instr_tokens = [
+            instr_token.format(**nested_values) for instr_token in self.instr_tokens
+        ]
 
     def fill_data(self, merge_data, row):
         """fills the filled_elements with all the elements containing the output text"""
@@ -242,13 +274,32 @@ class BaseMergeField(object):
 
         self.filled_elements = []
         value = row.get(self.name, "«{}»".format(self.name))
+
+        if isinstance(value, RichTextPayload):
+            payload_elements = value.clone_elements()
+            if not payload_elements:
+                if MAKE_TESTS_HAPPY:
+                    self.filled_value = ""
+                    self.fill_value(self._instr_elements[0], "")
+                return
+
+            self.filled_elements = payload_elements
+            self.filled_value = value
+            self.rich_text_payload = value
+            return
+
         try:
             value = self._format(value)
         except Exception as e:
-            warnings.warn("Invalid formatting for field <{}> with error <{}>".format(self.instr, e))
+            warnings.warn(
+                "Invalid formatting for field <{}> with error <{}>".format(
+                    self.instr, e
+                )
+            )
             # raise
 
         self.filled_value = value
+        self.rich_text_payload = None
 
         if value is None:
             # no elements should be filled ?
@@ -294,14 +345,20 @@ class BaseMergeField(object):
 
     def get_field_with_filled_elements(self):
         # for complex fields
-        all_elements = [deepcopy(elem) for elem in self._all_elements]  # copy of all elements
+        all_elements = [
+            deepcopy(elem) for elem in self._all_elements
+        ]  # copy of all elements
         if not self._show_elements:
             separate_element = deepcopy(self._all_elements[-1])
-            separate_element.find("w:fldChar", namespaces=NAMESPACES).set("{%(w)s}fldCharType" % NAMESPACES, "separate")
+            separate_element.find("w:fldChar", namespaces=NAMESPACES).set(
+                "{%(w)s}fldCharType" % NAMESPACES, "separate"
+            )
             all_elements[-1:-1] = [separate_element] + self.filled_elements
         else:
             index = self._all_elements.index(self._show_elements[0])
-            all_elements[index : index + len(self._show_elements)] = self.filled_elements
+            all_elements[index : index + len(self._show_elements)] = (
+                self.filled_elements
+            )
         return all_elements
 
     def _make_br(self):
@@ -309,7 +366,9 @@ class BaseMergeField(object):
 
     def _make_text(self, text):
         if self.nested:
-            text_node = etree.Element("{%(w)s}instrText" % NAMESPACES, attrib=None, nsmap=None)
+            text_node = etree.Element(
+                "{%(w)s}instrText" % NAMESPACES, attrib=None, nsmap=None
+            )
             text_node.set("{%(xml)s}space" % NAMESPACES, "preserve")
         else:
             text_node = etree.Element("{%(w)s}t" % NAMESPACES, attrib=None, nsmap=None)
@@ -331,7 +390,9 @@ class BaseMergeField(object):
 
         for parent in parents_to_remove:
             parent.getparent().remove(parent)
-        replacement_element = etree.Element("MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name)
+        replacement_element = etree.Element(
+            "MergeField", attrib=None, nsmap=None, merge_key=self.key, name=self.name
+        )
         self.parent.replace(self._all_elements[0], replacement_element)
         return replacement_element
 
